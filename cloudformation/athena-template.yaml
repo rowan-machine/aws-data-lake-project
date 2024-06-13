@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an S3 bucket for Athena query results and the necessary IAM roles.
+
+Resources:
+  # S3 Bucket for Athena Query Results
+  AthenaQueryResultsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'athena-query-results-123456789012-us-east-1'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireQueryResults
+            Status: Enabled
+            ExpirationInDays: 30
+
+  # IAM Role for Athena
+  AthenaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'athena.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'AthenaS3AccessPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:ListBucket'
+                Resource: 
+                  - 'arn:aws:s3:::athena-query-results-123456789012-us-east-1'
+                  - 'arn:aws:s3:::athena-query-results-123456789012-us-east-1/*'
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+Outputs:
+  AthenaQueryResultsBucketName:
+    Description: Name of the S3 bucket for Athena query results
+    Value: !Ref AthenaQueryResultsBucket
+
+  AthenaExecutionRoleArn:
+    Description: ARN of the IAM role for Athena
+    Value: !GetAtt AthenaExecutionRole.Arn

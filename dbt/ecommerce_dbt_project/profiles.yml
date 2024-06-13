@@ -1,0 +1,12 @@
+# ~/.dbt/profiles.yml
+ecommerce_dbt_project:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      s3_staging_dir: s3://athena-query-results-123456789012-us-east-1/
+      region_name: us-east-1
+      schema: ecommerce_dbt_dev  # The schema where your models will be deployed
+      database: ecommerce_athena_database  # The Glue/Athena catalog name
+      work_group: primary  # Optional, if you have a specific workgroup
+      aws_profile_name: default  # Optional, if using AWS named profiles
