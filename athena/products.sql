@@ -1,0 +1,1 @@
+SELECT * FROM "ecommerce_db_dev"."products" LIMIT 10;
