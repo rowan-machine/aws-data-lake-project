@@ -1,0 +1,283 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS CloudFormation template to create an S3-based data lake structure for development and production environments
+  with detailed folder structure, including raw data, processed data, dbt models, and analytics consumption, as well as
+  AWS Glue objects including an IAM role, Glue database, and Glue crawler.
+
+Parameters:
+  LambdaS3Bucket:
+    Description: S3 bucket where the Lambda deployment package is stored
+    Type: String
+    Default: 'lambda-deployment-bucket-123456789012-us-east-1'  # Example bucket name
+
+  LambdaS3Key:
+    Description: S3 key of the Lambda deployment package
+    Type: String
+    Default: 'lambda-deployment-package.zip'  # Example key
+
+Resources:
+  # S3 Buckets
+  DevDataLakeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: ecommerce-data-lake-dev
+      AccessControl: Private
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierRule
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 30
+
+  ProdDataLakeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: ecommerce-data-lake-prod
+      AccessControl: Private
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierRule
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 30
+
+  # IAM Role for Lambda and Glue
+  GlueS3AccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'lambda.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'LambdaS3AccessPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource: 'arn:aws:s3:::*'
+              - Effect: 'Allow'
+                Action: 'glue:*'
+                Resource: '*'
+
+  # Lambda Function to Create S3 Folders
+  S3PutObjectFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: 'index.handler'
+      Role: !GetAtt GlueS3AccessRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: !Ref LambdaS3Key
+      Runtime: 'python3.8'
+      Timeout: 60
+
+  # Custom Resource for Folder Structure in Dev
+  DevDataLakeBucketFolders:
+    Type: 'Custom::S3PutObject'
+    Properties:
+      ServiceToken: !GetAtt S3PutObjectFunction.Arn
+      BucketName: !Ref DevDataLakeBucket
+      FolderStructure:
+        - raw-data/netsuite/full-load/orders/
+        - raw-data/netsuite/full-load/customers/
+        - raw-data/netsuite/full-load/transactions/
+        - raw-data/netsuite/cdc/orders/
+        - raw-data/netsuite/cdc/customers/
+        - raw-data/netsuite/cdc/transactions/
+        - raw-data/salesforce/full-load/leads/
+        - raw-data/salesforce/full-load/opportunities/
+        - raw-data/salesforce/full-load/accounts/
+        - raw-data/salesforce/cdc/leads/
+        - raw-data/salesforce/cdc/opportunities/
+        - raw-data/salesforce/cdc/accounts/
+        - raw-data/internal-db/full-load/hr/
+        - raw-data/internal-db/full-load/finance/
+        - raw-data/internal-db/full-load/inventory/
+        - raw-data/internal-db/cdc/hr/
+        - raw-data/internal-db/cdc/finance/
+        - raw-data/internal-db/cdc/inventory/
+        - raw-data/other-sources/source1/
+        - raw-data/other-sources/source2/
+        - processed-data/merged/orders/
+        - processed-data/merged/customers/
+        - processed-data/merged/transactions/
+        - processed-data/sales/orders/
+        - processed-data/sales/transactions/
+        - processed-data/marketing/leads/
+        - processed-data/marketing/campaigns/
+        - processed-data/finance/revenue/
+        - processed-data/finance/expenses/
+        - processed-data/hr/employees/
+        - processed-data/hr/payroll/
+        - processed-data/other-domains/domain1/
+        - processed-data/other-domains/domain2/
+        - dbt_models/fact_tables/fact_sales/
+        - dbt_models/fact_tables/fact_transactions/
+        - dbt_models/dimension_tables/dim_customers/
+        - dbt_models/dimension_tables/dim_products/
+        - analytics-consumption/bi-tools/tableau/
+        - analytics-consumption/bi-tools/powerbi/
+        - analytics-consumption/data-science/models/
+        - analytics-consumption/data-science/predictions/
+        - analytics-consumption/aggregated-data/monthly-reports/
+        - analytics-consumption/aggregated-data/quarterly-reports/
+        - metadata/data-catalog/
+        - metadata/data-lineage/
+
+  # Custom Resource for Folder Structure in Prod
+  ProdDataLakeBucketFolders:
+    Type: 'Custom::S3PutObject'
+    Properties:
+      ServiceToken: !GetAtt S3PutObjectFunction.Arn
+      BucketName: !Ref ProdDataLakeBucket
+      FolderStructure:
+        - raw-data/netsuite/full-load/orders/
+        - raw-data/netsuite/full-load/customers/
+        - raw-data/netsuite/full-load/transactions/
+        - raw-data/netsuite/cdc/orders/
+        - raw-data/netsuite/cdc/customers/
+        - raw-data/netsuite/cdc/transactions/
+        - raw-data/salesforce/full-load/leads/
+        - raw-data/salesforce/full-load/opportunities/
+        - raw-data/salesforce/full-load/accounts/
+        - raw-data/salesforce/cdc/leads/
+        - raw-data/salesforce/cdc/opportunities/
+        - raw-data/salesforce/cdc/accounts/
+        - raw-data/internal-db/full-load/hr/
+        - raw-data/internal-db/full-load/finance/
+        - raw-data/internal-db/full-load/inventory/
+        - raw-data/internal-db/cdc/hr/
+        - raw-data/internal-db/cdc/finance/
+        - raw-data/internal-db/cdc/inventory/
+        - raw-data/other-sources/source1/
+        - raw-data/other-sources/source2/
+        - processed-data/merged/orders/
+        - processed-data/merged/customers/
+        - processed-data/merged/transactions/
+        - processed-data/sales/orders/
+        - processed-data/sales/transactions/
+        - processed-data/marketing/leads/
+        - processed-data/marketing/campaigns/
+        - processed-data/finance/revenue/
+        - processed-data/finance/expenses/
+        - processed-data/hr/employees/
+        - processed-data/hr/payroll/
+        - processed-data/other-domains/domain1/
+        - processed-data/other-domains/domain2/
+        - dbt_models/fact_tables/fact_sales/
+        - dbt_models/fact_tables/fact_transactions/
+        - dbt_models/dimension_tables/dim_customers/
+        - dbt_models/dimension_tables/dim_products/
+        - analytics-consumption/bi-tools/tableau/
+        - analytics-consumption/bi-tools/powerbi/
+        - analytics-consumption/data-science/models/
+        - analytics-consumption/data-science/predictions/
+        - analytics-consumption/aggregated-data/monthly-reports/
+        - analytics-consumption/aggregated-data/quarterly-reports/
+        - metadata/data-catalog/
+        - metadata/data-lineage/
+
+  # Glue Database
+  GlueDatabase:
+    Type: 'AWS::Glue::Database'
+    Properties:
+      CatalogId: !Ref 'AWS::AccountId'
+      DatabaseInput:
+        Name: 'ecommerce_db_dev'
+        Description: 'Development database for ecommerce data lake'
+
+  # IAM Role for Glue Crawler
+  GlueCrawlerRole:
+    Type: 'AWS::IAM::Role'
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'GlueCrawlerPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:ListBucket'
+                Resource: 
+                  - 'arn:aws:s3:::ecommerce-data-lake-dev'
+                  - 'arn:aws:s3:::ecommerce-data-lake-dev/*'
+                  - 'arn:aws:s3:::ecommerce-data-lake-prod'
+                  - 'arn:aws:s3:::ecommerce-data-lake-prod/*'
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+  # Glue Crawler for Full Load
+  FullLoadCrawler:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: 'full-load-crawler'
+      Role: !GetAtt GlueCrawlerRole.Arn
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: 's3://ecommerce-data-lake-dev/raw-data/netsuite/full-load/'
+      SchemaChangePolicy:
+        UpdateBehavior: 'UPDATE_IN_DATABASE'
+        DeleteBehavior: 'LOG'
+
+  # Glue Crawler for CDC
+  CDCCrawler:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: 'cdc-crawler'
+      Role: !GetAtt GlueCrawlerRole.Arn
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: 's3://ecommerce-data-lake-dev/raw-data/netsuite/cdc/'
+      SchemaChangePolicy:
+        UpdateBehavior: 'UPDATE_IN_DATABASE'
+        DeleteBehavior: 'LOG'
+
+Outputs:
+  DevBucketName:
+    Description: Name of the development data lake S3 bucket
+    Value: !Ref DevDataLakeBucket
+
+  ProdBucketName:
+    Description: Name of the production data lake S3 bucket
+    Value: !Ref ProdDataLakeBucket
+
+  GlueS3AccessRoleArn:
+    Description: ARN of the IAM role for Glue
+    Value: !GetAtt GlueS3AccessRole.Arn
+
+  GlueDatabaseName:
+    Description: Name of the Glue database
+    Value: !Ref GlueDatabase
+
+  FullLoadCrawlerName:
+    Description: Name of the Glue crawler for full load
+    Value: !Ref FullLoadCrawler
+
+  CDCCrawlerName:
+    Description: Name of the Glue crawler for CDC
+    Value: !Ref CDCCrawler
