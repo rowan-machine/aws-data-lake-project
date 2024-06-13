@@ -17,7 +17,7 @@ Resources:
   AthenaQueryResultsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: athena-query-results-123456789012-us-east-1
+      BucketName: athena-query-results-1234567890123-us-east-1
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -79,7 +79,7 @@ Resources:
                 Action: 'glue:*'
                 Resource: '*'
 
-AthenaExecutionRole:
+  AthenaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
       AssumeRolePolicyDocument:
@@ -100,8 +100,8 @@ AthenaExecutionRole:
                   - 's3:PutObject'
                   - 's3:ListBucket'
                 Resource: 
-                  - 'arn:aws:s3:::athena-query-results-123456789012-us-east-1'
-                  - 'arn:aws:s3:::athena-query-results-123456789012-us-east-1/*'
+                  - 'arn:aws:s3:::athena-query-results-1234567890123-us-east-1'
+                  - 'arn:aws:s3:::athena-query-results-1234567890123-us-east-1/*'
               - Effect: 'Allow'
                 Action:
                   - 'logs:CreateLogGroup'
@@ -134,7 +134,7 @@ AthenaExecutionRole:
                 Action: 'logs:*'
                 Resource: 'arn:aws:logs:*:*:*'
 
-  # Lambda Function to Create S3 Folders
+ # Lambda Function to Create S3 Folders
   S3PutObjectFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -328,7 +328,7 @@ AthenaExecutionRole:
       Name: data-lake-workgroup
       State: ENABLED
       Description: Workgroup for Data Lake project
-      Configuration:
+      WorkGroupConfiguration:
         ResultConfiguration:
           OutputLocation: !Sub 's3://${AthenaQueryResultsBucket}/'
         EnforceWorkGroupConfiguration: true
