@@ -1,0 +1,6 @@
+{
+  "Parameters": {
+    "LambdaS3Bucket": "lambda-deployment-bucket-123456789012-us-east-1",
+    "LambdaS3Key": "lambda-deployment-package.zip"
+  }
+}
