@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Data processing stack for AWS Data Lake project
+
+Resources:
+  GlueDatabase:
+    Type: 'AWS::Glue::Database'
+    Properties:
+      CatalogId: !Ref 'AWS::AccountId'
+      DatabaseInput:
+        Name: 'ecommerce_db_dev'
+        Description: 'Development database for ecommerce data lake'
+
+  GlueCrawlerRole:
+    Type: 'AWS::IAM::Role'
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'GlueCrawlerPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:ListBucket'
+                Resource: 
+                  - 'arn:aws:s3:::ecommerce-data-lake-dev'
+                  - 'arn:aws:s3:::ecommerce-data-lake-dev/*'
+                  - 'arn:aws:s3:::ecommerce-data-lake-prod'
+                  - 'arn:aws:s3:::ecommerce-data-lake-prod/*'
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+  FullLoadCrawler:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: 'full-load-crawler'
+      Role: !GetAtt GlueCrawlerRole.Arn
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: 's3://ecommerce-data-lake-dev/raw-data/netsuite/full-load/'
+      SchemaChangePolicy:
+        UpdateBehavior: 'UPDATE_IN_DATABASE'
+        DeleteBehavior: 'LOG'
+
+  CDCCrawler:
+    Type: 'AWS::Glue::Crawler'
+    Properties:
+      Name: 'cdc-crawler'
+      Role: !GetAtt GlueCrawlerRole.Arn
+      DatabaseName: !Ref GlueDatabase
+      Targets:
+        S3Targets:
+          - Path: 's3://ecommerce-data-lake-dev/raw-data/netsuite/cdc/'
+      SchemaChangePolicy:
+        UpdateBehavior: 'UPDATE_IN_DATABASE'
+        DeleteBehavior: 'LOG'

@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Storage stack for AWS Data Lake project
+
+Resources:
+  AthenaQueryResultsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: athena-query-results-1234567890123-us-east-1
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireQueryResults
+            Status: Enabled
+            ExpirationInDays: 30
+
+  DevDataLakeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: ecommerce-data-lake-dev
+      AccessControl: Private
+      LifecycleConfiguration:
+        Rules:
+          - Id: GlacierRule
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 30
+
+DevDataLakeBucketRawDataNetsuiteFullLoadOrders:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/raw-data/netsuite/full-load/orders/'
+
+  DevDataLakeBucketRawDataNetsuiteFullLoadCustomers:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/raw-data/netsuite/full-load/customers/'
+
+  DevDataLakeBucketRawDataNetsuiteFullLoadTransactions:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/raw-data/netsuite/full-load/transactions/'
+
+  DevDataLakeBucketRawDataNetsuiteCdcOrders:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/raw-data/netsuite/cdc/orders/'
+
+  DevDataLakeBucketRawDataNetsuiteCdcCustomers:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/raw-data/netsuite/cdc/customers/'
+
+  DevDataLakeBucketRawDataNetsuiteCdcTransactions:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/raw-data/netsuite/cdc/transactions/'
+
+  DevDataLakeBucketProcessedDataMergedOrders:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/processed-data/merged/orders/'
+
+  DevDataLakeBucketProcessedDataMergedCustomers:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/processed-data/merged/customers/'
+
+  DevDataLakeBucketProcessedDataMergedTransactions:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-dev/processed-data/merged/transactions/'
