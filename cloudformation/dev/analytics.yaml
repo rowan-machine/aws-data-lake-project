@@ -1,11 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Analytics stack for AWS Data Lake project
 
-Parameters:
-  AthenaQueryResultsBucket:
-    Type: String
-    Description: The S3 bucket for Athena query results
-
 Resources:
   AthenaExecutionRole:
     Type: 'AWS::IAM::Role'
