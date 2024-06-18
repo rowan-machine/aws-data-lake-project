@@ -1,0 +1,47 @@
+name: Deploy Dev CloudFormation Stacks
+
+on:
+  push:
+    branches:
+      - DEV
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+          sudo installer -pkg AWSCLIV2.pkg -target /
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy Dev Storage Stack
+        run: |
+          aws cloudformation deploy --template-file cloudformation/dev/storage.yaml --stack-name dev-storage-stack --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Dev Data Processing Stack
+        run: |
+          aws cloudformation deploy --template-file cloudformation/dev/data-processing.yaml --stack-name dev-data-processing-stack --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Dev Analytics Stack
+        run: |
+          aws cloudformation deploy --template-file cloudformation/dev/analytics.yaml --stack-name dev-analytics-stack --capabilities CAPABILITY_NAMED_IAM
+
+      - name: Deploy Dev Parent Stack
+        run: |
+          aws cloudformation deploy --template-file cloudformation/dev/parent.yaml --stack-name dev-parent-stack --capabilities CAPABILITY_NAMED_IAM
