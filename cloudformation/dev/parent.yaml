@@ -5,22 +5,16 @@ Resources:
   StorageStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/mybucket/storage.yaml'
-
-  ComputeStack:
-    Type: 'AWS::CloudFormation::Stack'
-    Properties:
-      TemplateURL: 'https://s3.amazonaws.com/mybucket/compute.yaml'
-      Parameters:
-        LambdaS3Bucket: 'lambda-deployment-bucket-123456789012-us-east-1'
-        LambdaS3Key: 'lambda-deployment-package.zip'
+      TemplateURL: 'https://s3.us-east-1.amazonaws.com/aws-data-lake-project-repo/cloudformation/dev/storage.yaml'
 
   DataProcessingStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/mybucket/data-processing.yaml'
+      TemplateURL: 'https://s3.us-east-1.amazonaws.com/aws-data-lake-project-repo/cloudformation/dev/data-processing.yaml'
 
   AnalyticsStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: 'https://s3.amazonaws.com/mybucket/analytics.yaml'
+      TemplateURL: 'https://s3.us-east-1.amazonaws.com/aws-data-lake-project-repo/cloudformation/dev/analytics.yaml'
+      Parameters:
+        AthenaQueryResultsBucket: !GetAtt StorageStack.Outputs.AthenaQueryResultsBucket

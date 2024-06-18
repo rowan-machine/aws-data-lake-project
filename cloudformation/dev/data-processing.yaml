@@ -31,10 +31,10 @@ Resources:
                   - 's3:PutObject'
                   - 's3:ListBucket'
                 Resource: 
-                  - 'arn:aws:s3:::ecommerce-data-lake-dev'
-                  - 'arn:aws:s3:::ecommerce-data-lake-dev/*'
-                  - 'arn:aws:s3:::ecommerce-data-lake-prod'
-                  - 'arn:aws:s3:::ecommerce-data-lake-prod/*'
+                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev'
+                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev/*'
+                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-prod'
+                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-prod/*'
               - Effect: 'Allow'
                 Action:
                   - 'logs:CreateLogGroup'
@@ -50,7 +50,7 @@ Resources:
       DatabaseName: !Ref GlueDatabase
       Targets:
         S3Targets:
-          - Path: 's3://ecommerce-data-lake-dev/raw-data/netsuite/full-load/'
+          - Path: 's3://ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/full-load/'
       SchemaChangePolicy:
         UpdateBehavior: 'UPDATE_IN_DATABASE'
         DeleteBehavior: 'LOG'
@@ -63,7 +63,7 @@ Resources:
       DatabaseName: !Ref GlueDatabase
       Targets:
         S3Targets:
-          - Path: 's3://ecommerce-data-lake-dev/raw-data/netsuite/cdc/'
+          - Path: 's3://ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/cdc/'
       SchemaChangePolicy:
         UpdateBehavior: 'UPDATE_IN_DATABASE'
         DeleteBehavior: 'LOG'
