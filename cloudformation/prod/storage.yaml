@@ -28,7 +28,7 @@ Resources:
               - StorageClass: GLACIER
                 TransitionInDays: 30
 
-ProdDataLakeBucketRawDataNetsuiteFullLoadOrders:
+  ProdDataLakeBucketRawDataNetsuiteFullLoadOrders:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub 'ecommerce-data-lake-prod/raw-data/netsuite/full-load/orders/'
