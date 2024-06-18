@@ -18,7 +18,7 @@ Resources:
   DevDataLakeBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: ecommerce-data-lake-dev
+      BucketName: ecommerce-data-lake-us-east-1-dev
       AccessControl: Private
       LifecycleConfiguration:
         Rules:

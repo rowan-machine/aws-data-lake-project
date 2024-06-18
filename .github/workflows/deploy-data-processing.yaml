@@ -1,0 +1,59 @@
+name: Deploy Data Processing Stack
+
+on:
+  push:
+    branches:
+      - DEV
+    paths:
+      - 'cloudformation/dev/data-processing.yaml'
+      - '.github/workflows/deploy-data-processing.yaml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Check if Stack Exists
+        id: stack
+        run: |
+          STACK_NAME=dev-data-processing-stack
+          if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
+            echo "::set-output name=stack-exists::true"
+          else
+            echo "::set-output name=stack-exists::false"
+          fi
+
+      - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
+        if: steps.stack.outputs.stack-exists == 'true'
+        run: |
+          STACK_NAME=dev-data-processing-stack
+          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
+          if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
+            aws cloudformation delete-stack --stack-name $STACK_NAME
+            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          fi
+
+      - name: Deploy Dev Data Processing Stack
+        run: |
+          aws cloudformation deploy --template-file cloudformation/dev/data-processing.yaml --stack-name dev-data-processing-stack --capabilities CAPABILITY_NAMED_IAM

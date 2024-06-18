@@ -1,9 +1,12 @@
-name: Deploy Dev CloudFormation Stacks
+name: Deploy Parent Stack
 
 on:
   push:
     branches:
       - DEV
+    paths:
+      - 'cloudformation/dev/parent.yaml'
+      - '.github/workflows/deploy-parent.yaml'
 
 jobs:
   deploy:
@@ -31,17 +34,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy Dev Storage Stack
+      - name: Check if Stack Exists
+        id: stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/dev/storage.yaml --stack-name dev-storage-stack --capabilities CAPABILITY_NAMED_IAM
+          STACK_NAME=dev-parent-stack
+          if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
+            echo "::set-output name=stack-exists::true"
+          else
+            echo "::set-output name=stack-exists::false"
+          fi
 
-      - name: Deploy Dev Data Processing Stack
+      - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
+        if: steps.stack.outputs.stack-exists == 'true'
         run: |
-          aws cloudformation deploy --template-file cloudformation/dev/data-processing.yaml --stack-name dev-data-processing-stack --capabilities CAPABILITY_NAMED_IAM
-
-      - name: Deploy Dev Analytics Stack
-        run: |
-          aws cloudformation deploy --template-file cloudformation/dev/analytics.yaml --stack-name dev-analytics-stack --capabilities CAPABILITY_NAMED_IAM
+          STACK_NAME=dev-parent-stack
+          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
+          if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
+            aws cloudformation delete-stack --stack-name $STACK_NAME
+            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          fi
 
       - name: Deploy Dev Parent Stack
         run: |
