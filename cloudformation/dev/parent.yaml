@@ -16,5 +16,3 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       TemplateURL: 'https://s3.us-east-1.amazonaws.com/aws-data-lake-project-repo/cloudformation/dev/analytics.yaml'
-      Parameters:
-        AthenaQueryResultsBucket: !GetAtt StorageStack.Outputs.AthenaQueryResultsBucket

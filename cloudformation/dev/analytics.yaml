@@ -46,7 +46,7 @@ Resources:
       Description: Workgroup for Data Lake project
       Configuration:
         ResultConfiguration:
-          OutputLocation: !Sub 's3://${AthenaQueryResultsBucket}/'
+          OutputLocation: 's3://athena-query-results-1234567890123-us-east-1/'
         EnforceWorkGroupConfiguration: true
         PublishCloudWatchMetricsEnabled: true
         RequesterPaysEnabled: false

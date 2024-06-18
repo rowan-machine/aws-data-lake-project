@@ -27,3 +27,49 @@ Resources:
             Transitions:
               - StorageClass: GLACIER
                 TransitionInDays: 30
+
+
+  ProdDataLakeBucketRawDataNetsuiteFullLoadOrders:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/full-load/orders/'
+
+  ProdDataLakeBucketRawDataNetsuiteFullLoadCustomers:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/full-load/customers/'
+
+  ProdDataLakeBucketRawDataNetsuiteFullLoadTransactions:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/full-load/transactions/'
+
+  ProdDataLakeBucketRawDataNetsuiteCdcOrders:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/cdc/orders/'
+
+  ProdDataLakeBucketRawDataNetsuiteCdcCustomers:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/cdc/customers/'
+
+  ProdDataLakeBucketRawDataNetsuiteCdcTransactions:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/cdc/transactions/'
+
+  ProdDataLakeBucketProcessedDataMergedOrders:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/processed-data/merged/orders/'
+
+  ProdDataLakeBucketProcessedDataMergedCustomers:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/processed-data/merged/customers/'
+
+  ProdDataLakeBucketProcessedDataMergedTransactions:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-us-east-1-dev/processed-data/merged/transactions/'
