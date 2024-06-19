@@ -1,7 +1,112 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Data processing stack for AWS Data Lake project
 
+Parameters:
+  GlueDatabaseName:
+    Type: String
+    Description: The name of the Glue database
+    Default: 'ecommerce_db_dev'
+
+  DevDataLakeBucket:
+    Type: String
+    Description: The name of the S3 bucket for the data lake
+    Default: 'ecommerce-data-lake-us-east-1-dev'
+
 Resources:
+  GlueIcebergTableOrders:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      DatabaseName: !Ref GlueDatabaseName
+      CatalogId: !Ref 'AWS::AccountId'
+      TableInput:
+        Name: 'orders'
+        TableType: 'EXTERNAL_TABLE'
+        Parameters:
+          classification: 'iceberg'
+        StorageDescriptor:
+          Columns:
+            - Name: 'order_id'
+              Type: 'string'
+            - Name: 'order_date'
+              Type: 'string'
+            - Name: 'customer_id'
+              Type: 'string'
+            - Name: 'product_id'
+              Type: 'string'
+            - Name: 'quantity'
+              Type: 'int'
+            - Name: 'total_price'
+              Type: 'double'
+          Location: !Sub 's3://${DevDataLakeBucket}/raw-data/netsuite/full-load/orders/'
+          InputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+          OutputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+
+  GlueIcebergTableCustomers:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      DatabaseName: !Ref GlueDatabaseName
+      CatalogId: !Ref 'AWS::AccountId'
+      TableInput:
+        Name: 'customers'
+        TableType: 'EXTERNAL_TABLE'
+        Parameters:
+          classification: 'iceberg'
+        StorageDescriptor:
+          Columns:
+            - Name: 'customer_id'
+              Type: 'string'
+            - Name: 'first_name'
+              Type: 'string'
+            - Name: 'last_name'
+              Type: 'string'
+            - Name: 'email'
+              Type: 'string'
+            - Name: 'phone'
+              Type: 'string'
+            - Name: 'address'
+              Type: 'string'
+          Location: !Sub 's3://${DevDataLakeBucket}/raw-data/netsuite/full-load/customers/'
+          InputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+          OutputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+
+  GlueIcebergTableProducts:
+    Type: 'AWS::Glue::Table'
+    Properties:
+      DatabaseName: !Ref GlueDatabaseName
+      CatalogId: !Ref 'AWS::AccountId'
+      TableInput:
+        Name: 'products'
+        TableType: 'EXTERNAL_TABLE'
+        Parameters:
+          classification: 'iceberg'
+        StorageDescriptor:
+          Columns:
+            - Name: 'product_id'
+              Type: 'string'
+            - Name: 'product_name'
+              Type: 'string'
+            - Name: 'category'
+              Type: 'string'
+            - Name: 'price'
+              Type: 'double'
+            - Name: 'stock_quantity'
+              Type: 'int'
+          Location: !Sub 's3://${DevDataLakeBucket}/raw-data/netsuite/full-load/products/'
+          InputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
+          OutputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+
   GlueS3AccessPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
