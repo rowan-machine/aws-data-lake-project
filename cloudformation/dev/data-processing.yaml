@@ -23,13 +23,13 @@ Resources:
           - Effect: 'Allow'
             Action:
               - 'glue:GetDatabase'
-              - 'glue:GetTables'
               - 'glue:GetTable'
+              - 'glue:GetTables'
               - 'glue:CreateTable'
               - 'glue:UpdateTable'
             Resource: 
               - 'arn:aws:glue:us-east-1:730335322582:catalog'
-              - 'arn:aws:glue:us-east-1:730335322582:database/*'
+              - 'arn:aws:glue:us-east-1:730335322582:database/ecommerce_db_dev'
               - 'arn:aws:glue:us-east-1:730335322582:table/*'
       Roles:
         - !Ref GlueS3AccessRole
