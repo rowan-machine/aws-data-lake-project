@@ -13,6 +13,59 @@ Parameters:
     Default: 'ecommerce-data-lake-us-east-1-dev'
 
 Resources:
+  GlueS3AccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'GlueS3AccessPolicy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action:
+              - 'glue:*'
+            Resource: '*'
+          - Effect: 'Allow'
+            Action:
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource:
+              - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev'
+              - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev/*'
+          - Effect: 'Allow'
+            Action:
+              - 'glue:GetDatabase'
+              - 'glue:GetTable'
+              - 'glue:GetTables'
+              - 'glue:CreateTable'
+              - 'glue:UpdateTable'
+              - 'glue:GetCatalog'
+            Resource: 
+              - 'arn:aws:glue:us-east-1:730335322582:catalog'
+              - 'arn:aws:glue:us-east-1:730335322582:database/ecommerce_db_dev'
+              - 'arn:aws:glue:us-east-1:730335322582:table/*'
+      Roles:
+        - !Ref GlueS3AccessRole
+
+  GlueS3AccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: "/"
+
+  GlueDatabase:
+    Type: 'AWS::Glue::Database'
+    Properties:
+      CatalogId: !Ref 'AWS::AccountId'
+      DatabaseInput:
+        Name: 'ecommerce_db_dev'
+        Description: 'Development database for ecommerce data lake'
+
   GlueIcebergTableOrders:
     Type: 'AWS::Glue::Table'
     Properties:
@@ -106,58 +159,6 @@ Resources:
           NumberOfBuckets: -1
           SerdeInfo:
             SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-
-  GlueS3AccessPolicy:
-    Type: 'AWS::IAM::Policy'
-    Properties:
-      PolicyName: 'GlueS3AccessPolicy'
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Action:
-              - 'glue:*'
-            Resource: '*'
-          - Effect: 'Allow'
-            Action:
-              - 's3:GetObject'
-              - 's3:ListBucket'
-            Resource:
-              - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev'
-              - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev/*'
-          - Effect: 'Allow'
-            Action:
-              - 'glue:GetDatabase'
-              - 'glue:GetTable'
-              - 'glue:GetTables'
-              - 'glue:CreateTable'
-              - 'glue:UpdateTable'
-            Resource: 
-              - 'arn:aws:glue:us-east-1:730335322582:catalog'
-              - 'arn:aws:glue:us-east-1:730335322582:database/ecommerce_db_dev'
-              - 'arn:aws:glue:us-east-1:730335322582:table/*'
-      Roles:
-        - !Ref GlueS3AccessRole
-
-  GlueS3AccessRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Principal:
-              Service: 'glue.amazonaws.com'
-            Action: 'sts:AssumeRole'
-      Path: "/"
-
-  GlueDatabase:
-    Type: 'AWS::Glue::Database'
-    Properties:
-      CatalogId: !Ref 'AWS::AccountId'
-      DatabaseInput:
-        Name: 'ecommerce_db_dev'
-        Description: 'Development database for ecommerce data lake'
 
   GlueCrawlerRole:
     Type: 'AWS::IAM::Role'
