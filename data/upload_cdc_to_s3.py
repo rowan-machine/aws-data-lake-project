@@ -4,8 +4,8 @@ import boto3
 s3 = boto3.client('s3')
 
 # Define bucket names
-dev_bucket = 'ecommerce-data-lake-dev'
-prod_bucket = 'ecommerce-data-lake-prod'
+dev_bucket = 'ecommerce-data-lake-us-east-1-dev'
+prod_bucket = 'ecommerce-data-lake-us-east-1-prod'
 
 # Upload files to S3
 def upload_to_s3(bucket, file_name, object_name):
