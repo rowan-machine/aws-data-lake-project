@@ -38,4 +38,3 @@ jobs:
           aws s3 cp cloudformation/dev/storage.yaml s3://aws-data-lake-project-repo/cloudformation/dev/storage.yaml
           aws s3 cp cloudformation/dev/data-processing.yaml s3://aws-data-lake-project-repo/cloudformation/dev/data-processing.yaml
           aws s3 cp cloudformation/dev/analytics.yaml s3://aws-data-lake-project-repo/cloudformation/dev/analytics.yaml
-          aws s3 cp cloudformation/dev/parent.yaml s3://aws-data-lake-project-repo/cloudformation/dev/parent.yaml
