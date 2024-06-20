@@ -48,14 +48,12 @@ Resources:
                 Action:
                   - 's3:GetObject'
                   - 's3:ListBucket'
-                Resource:
-                  - 'arn:aws:s3:::aws-glue-assets-730335322582-us-east-1'
-                  - 'arn:aws:s3:::aws-glue-assets-730335322582-us-east-1/scripts/FullLoadAndCDCProcesser.py'
-              - Effect: 'Allow'
-                Action:
                   - 's3:PutObject'
                 Resource:
-                  - 'arn:aws:s3:::your-output-bucket/*'
+                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev'
+                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev/*'
+                  - 'arn:aws:s3:::aws-glue-assets-730335322582-us-east-1'
+                  - 'arn:aws:s3:::aws-glue-assets-730335322582-us-east-1/*'
               - Effect: 'Allow'
                 Action:
                   - 'glue:*'
