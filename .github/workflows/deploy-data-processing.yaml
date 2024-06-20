@@ -1,4 +1,4 @@
-name: Deploy Data Processing Stack
+name: Deploy Data Processing Stack 
 
 on:
   push:

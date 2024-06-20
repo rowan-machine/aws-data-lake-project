@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Data processing stack for AWS Data Lake project
+Description: Data processing stack for AWS Data Lake project (Glue)
 
 Parameters:
   GlueDatabaseName:
@@ -12,7 +12,55 @@ Parameters:
     Description: The name of the S3 bucket for the data lake
     Default: 'ecommerce-data-lake-us-east-1-dev'
 
+  GlueJobName:
+    Description: The name of the Glue job
+    Type: String
+    Default: FullLoadAndCDCProcesserJob
+
+  GlueScriptLocation:
+    Description: The S3 location of the Glue script
+    Type: String
+    Default: s3://aws-glue-assets-730335322582-us-east-1/scripts/FullLoadAndCDCProcesser.py
+
+  GlueIAMRoleName:
+    Description: The name of the IAM role for the Glue job
+    Type: String
+    Default: GlueJobRole
+
 Resources:
+  GlueJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref GlueIAMRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: GlueJobS3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - 'arn:aws:s3:::aws-glue-assets-730335322582-us-east-1'
+                  - 'arn:aws:s3:::aws-glue-assets-730335322582-us-east-1/scripts/FullLoadAndCDCProcesser.py'
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                Resource:
+                  - 'arn:aws:s3:::your-output-bucket/*'
+              - Effect: 'Allow'
+                Action:
+                  - 'glue:*'
+                Resource: '*'
+                
   GlueS3AccessPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
@@ -66,154 +114,15 @@ Resources:
         Name: 'ecommerce_db_dev'
         Description: 'Development database for ecommerce data lake'
 
-  GlueIcebergTableOrders:
-    Type: 'AWS::Glue::Table'
+  GlueJob:
+    Type: 'AWS::Glue::Job'
     Properties:
-      DatabaseName: !Ref GlueDatabaseName
-      CatalogId: !Ref 'AWS::AccountId'
-      TableInput:
-        Name: 'orders'
-        TableType: 'EXTERNAL_TABLE'
-        Parameters:
-          classification: 'iceberg'
-        StorageDescriptor:
-          Columns:
-            - Name: 'order_id'
-              Type: 'string'
-            - Name: 'order_date'
-              Type: 'string'
-            - Name: 'customer_id'
-              Type: 'string'
-            - Name: 'product_id'
-              Type: 'string'
-            - Name: 'quantity'
-              Type: 'int'
-            - Name: 'total_price'
-              Type: 'double'
-          Location: !Sub 's3://${DevDataLakeBucket}/raw-data/netsuite/full-load/orders/'
-          InputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-          OutputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
-          Compressed: false
-          NumberOfBuckets: -1
-          SerdeInfo:
-            SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-
-  GlueIcebergTableCustomers:
-    Type: 'AWS::Glue::Table'
-    Properties:
-      DatabaseName: !Ref GlueDatabaseName
-      CatalogId: !Ref 'AWS::AccountId'
-      TableInput:
-        Name: 'customers'
-        TableType: 'EXTERNAL_TABLE'
-        Parameters:
-          classification: 'iceberg'
-        StorageDescriptor:
-          Columns:
-            - Name: 'customer_id'
-              Type: 'string'
-            - Name: 'first_name'
-              Type: 'string'
-            - Name: 'last_name'
-              Type: 'string'
-            - Name: 'email'
-              Type: 'string'
-            - Name: 'phone'
-              Type: 'string'
-            - Name: 'address'
-              Type: 'string'
-          Location: !Sub 's3://${DevDataLakeBucket}/raw-data/netsuite/full-load/customers/'
-          InputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-          OutputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
-          Compressed: false
-          NumberOfBuckets: -1
-          SerdeInfo:
-            SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-
-  GlueIcebergTableProducts:
-    Type: 'AWS::Glue::Table'
-    Properties:
-      DatabaseName: !Ref GlueDatabaseName
-      CatalogId: !Ref 'AWS::AccountId'
-      TableInput:
-        Name: 'products'
-        TableType: 'EXTERNAL_TABLE'
-        Parameters:
-          classification: 'iceberg'
-        StorageDescriptor:
-          Columns:
-            - Name: 'product_id'
-              Type: 'string'
-            - Name: 'product_name'
-              Type: 'string'
-            - Name: 'category'
-              Type: 'string'
-            - Name: 'price'
-              Type: 'double'
-            - Name: 'stock_quantity'
-              Type: 'int'
-          Location: !Sub 's3://${DevDataLakeBucket}/raw-data/netsuite/full-load/products/'
-          InputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-          OutputFormat: 'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
-          Compressed: false
-          NumberOfBuckets: -1
-          SerdeInfo:
-            SerializationLibrary: 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-
-  GlueCrawlerRole:
-    Type: 'AWS::IAM::Role'
-    Properties: 
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Principal:
-              Service: 'glue.amazonaws.com'
-            Action: 'sts:AssumeRole'
-      Policies:
-        - PolicyName: 'GlueCrawlerPolicy'
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: 'Allow'
-                Action:
-                  - 's3:GetObject'
-                  - 's3:PutObject'
-                  - 's3:ListBucket'
-                Resource: 
-                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev'
-                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev/*'
-                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-prod'
-                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-prod/*'
-              - Effect: 'Allow'
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                Resource: '*'
-
-  FullLoadCrawler:
-    Type: 'AWS::Glue::Crawler'
-    Properties:
-      Name: 'full-load-crawler'
-      Role: !GetAtt GlueCrawlerRole.Arn
-      DatabaseName: !Ref GlueDatabase
-      Targets:
-        S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/full-load/'
-      SchemaChangePolicy:
-        UpdateBehavior: 'UPDATE_IN_DATABASE'
-        DeleteBehavior: 'LOG'
-
-  CDCCrawler:
-    Type: 'AWS::Glue::Crawler'
-    Properties:
-      Name: 'cdc-crawler'
-      Role: !GetAtt GlueCrawlerRole.Arn
-      DatabaseName: !Ref GlueDatabase
-      Targets:
-        S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-dev/raw-data/netsuite/cdc/'
-      SchemaChangePolicy:
-        UpdateBehavior: 'UPDATE_IN_DATABASE'
-        DeleteBehavior: 'LOG'
+      Name: !Ref GlueJobName
+      Role: !GetAtt GlueJobRole.Arn
+      Command:
+        Name: glueetl
+        ScriptLocation: !Ref GlueScriptLocation
+        PythonVersion: '3'
+      GlueVersion: '2.0'
+      MaxCapacity: 2.0
+      Timeout: 2880
