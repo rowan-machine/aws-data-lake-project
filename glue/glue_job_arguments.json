@@ -1,0 +1,11 @@
+{
+    "--RAW_S3_PATH": "s3://ecommerce-data-lake-us-east-1-dev/01_raw/",
+    "--STAGING_S3_PATH": "s3://ecommerce-data-lake-us-east-1-dev/02_staging/",
+    "--PREPROCESSED_S3_PATH": "s3://ecommerce-data-lake-us-east-1-dev/03_preprocessed/",
+    "--MASTER_S3_PATH": "s3://ecommerce-data-lake-us-east-1-dev/04_master/",
+    "--CURATED_S3_PATH": "s3://ecommerce-data-lake-us-east-1-dev/06_curated/",
+    "--TABLE_NAME": "orders",
+    "--PROCESS_TYPE": "full",
+    "--SOURCE": "netSuite"
+  }
+  
