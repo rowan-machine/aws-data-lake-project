@@ -49,6 +49,7 @@ Resources:
                   - 's3:GetObject'
                   - 's3:ListBucket'
                   - 's3:PutObject'
+                  - 's3:DeleteObject'
                 Resource:
                   - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev'
                   - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-dev/*'
@@ -112,15 +113,20 @@ Resources:
         Name: 'ecommerce_db_dev'
         Description: 'Development database for ecommerce data lake'
 
-  GlueJob:
+FullLoadAndCDCProcesserJob:
     Type: 'AWS::Glue::Job'
     Properties:
-      Name: !Ref GlueJobName
-      Role: !GetAtt GlueJobRole.Arn
+      Name: FullLoadAndCDCProcesserJob
+      Role: !GetAtt GlueS3AccessRole.Arn
       Command:
-        Name: glueetl
+        Name: 'glueetl'
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
+      DefaultArguments:
+        '--TempDir': 's3://your-temp-dir/'
+        '--enable-metrics': ''
+        '--enable-continuous-log-filter': 'true'
+      MaxRetries: 1
       GlueVersion: '2.0'
-      MaxCapacity: 2.0
-      Timeout: 2880
+      NumberOfWorkers: 10
+      WorkerType: 'G.1X'
