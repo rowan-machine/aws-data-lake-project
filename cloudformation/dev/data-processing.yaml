@@ -113,16 +113,15 @@ Resources:
         Name: 'ecommerce_db_dev'
         Description: 'Development database for ecommerce data lake'
 
-FullLoadAndCDCProcesserJob:
+  GlueJob:
     Type: 'AWS::Glue::Job'
     Properties:
-      Name: FullLoadAndCDCProcesserJob
-      Role: !GetAtt GlueS3AccessRole.Arn
+      Name: !Ref GlueJobName
+      Role: !GetAtt GlueJobRole.Arn
       Command:
-        Name: 'glueetl'
+        Name: glueetl
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
-      MaxRetries: 1
       GlueVersion: '2.0'
-      NumberOfWorkers: 10
-      WorkerType: 'G.1X'
+      MaxCapacity: 2.0
+      Timeout: 2880
