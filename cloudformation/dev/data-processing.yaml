@@ -122,6 +122,6 @@ Resources:
         Name: glueetl
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
-      GlueVersion: '2.0'
+      GlueVersion: '4.0'
       MaxCapacity: 2.0
       Timeout: 2880
