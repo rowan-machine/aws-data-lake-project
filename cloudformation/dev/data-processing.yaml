@@ -122,10 +122,6 @@ FullLoadAndCDCProcesserJob:
         Name: 'glueetl'
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
-      DefaultArguments:
-        '--TempDir': 's3://your-temp-dir/'
-        '--enable-metrics': ''
-        '--enable-continuous-log-filter': 'true'
       MaxRetries: 1
       GlueVersion: '2.0'
       NumberOfWorkers: 10
