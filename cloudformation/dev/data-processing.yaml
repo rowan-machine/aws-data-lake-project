@@ -27,6 +27,11 @@ Parameters:
     Type: String
     Default: GlueJobRole
 
+  IcebergJarS3Path:
+    Description: S3 path to the Iceberg JAR file
+    Type: String
+    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-spark-runtime-3.5_2.12-1.5.2.jar'
+
 Resources:
   GlueJobRole:
     Type: 'AWS::IAM::Role'
@@ -122,6 +127,10 @@ Resources:
         Name: glueetl
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
+      DefaultArguments:
+        '--additional-python-modules': 'pydeequ'
+        '--extra-jars': !Ref IcebergJarS3Path
+        '--TempDir': 's3://temp-rowan-us-east-1/'
       GlueVersion: '4.0'
       MaxCapacity: 2.0
       Timeout: 2880

@@ -1,4 +1,10 @@
 import sys
+import subprocess
+
+# Install Deequ
+subprocess.check_call([sys.executable, "-m", "pip", "install", "--target=/tmp", "pydeequ"])
+sys.path.insert(0, '/tmp')
+
 from awsglue.transforms import *
 from awsglue.utils import getResolvedOptions
 from pyspark.context import SparkContext
@@ -26,6 +32,15 @@ glueContext = GlueContext(sc)
 spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
+
+# Enable Iceberg catalog
+spark.conf.set("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
+spark.conf.set("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog")
+spark.conf.set("spark.sql.catalog.spark_catalog.type", "hive")
+spark.conf.set("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog")
+spark.conf.set("spark.sql.catalog.local.type", "hadoop")
+spark.conf.set("spark.sql.catalog.local.warehouse", args['MASTER_S3_PATH'])
+spark.conf.set("spark.sql.catalog.local.warehouse", args['CURATED_S3_PATH'])
 
 # Read source data
 source_df = spark.read.format("csv").option("header", "true").load(args['RAW_S3_PATH'] + args['SOURCE'] + '/' + args['TABLE_NAME'] + '/' + args['PROCESS_TYPE'])
@@ -104,8 +119,11 @@ else:
         # Write Curated Products to Iceberg Table
         products_mastered_df.write.format("iceberg").mode("overwrite").save(curated_iceberg_table)
     elif args['TABLE_NAME'] == 'orders':
+        # Calculate total_amount
+        augmented_df = clean_df.withColumn("total_amount", col("quantity") * col("price"))
+
         # Aggregated Sales
-        aggregated_sales_df = clean_df.groupBy("product_id", "order_date").agg(
+        aggregated_sales_df = augmented_df.groupBy("product_id", "order_date").agg(
             F.sum("quantity").alias("total_quantity"),
             F.sum("total_amount").alias("total_sales")
         )
