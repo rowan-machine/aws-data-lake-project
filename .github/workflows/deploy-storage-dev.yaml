@@ -6,7 +6,7 @@ on:
       - DEV
     paths:
       - 'cloudformation/storage.yaml'
-      - '.github/workflows/deploy-storage.yaml'
+      - '.github/workflows/deploy-storage-dev.yaml'
 
 jobs:
   deploy:
