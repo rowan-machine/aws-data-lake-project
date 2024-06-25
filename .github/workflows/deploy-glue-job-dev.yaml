@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - DEV  # or the branch you want to trigger this workflow
+    paths:
+      - 'glue/scripts/FullLoadAndCDCProcesser.py'
+      - '.github/workflows/deploy-glue-job-dev.yaml'
 
 jobs:
   deploy:

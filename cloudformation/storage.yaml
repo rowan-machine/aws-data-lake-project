@@ -1,11 +1,33 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Storage stack for AWS Data Lake project
 
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment (e.g., dev, prod)
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
 Resources:
-  GlueAssetsBucket:
+  TempDirBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: 'aws-glue-assets-730335322582-us-east-1'
+      BucketName: !Sub 'temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAssets
+            Status: Enabled
+            ExpirationInDays: 365
+
+GlueAssetsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}'
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -18,7 +40,7 @@ Resources:
   DataLakeProjectRepoBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: 'aws-data-lake-project-repo'
+      BucketName: !Sub 'aws-data-lake-project-repo-${Environment}'
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -31,7 +53,7 @@ Resources:
   AthenaQueryResultsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: athena-query-results-1234567890123-us-east-1
+      BucketName: !Sub 'athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}''
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -44,7 +66,7 @@ Resources:
   DevDataLakeBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: ecommerce-data-lake-us-east-1-dev
+      BucketName: !Sub 'ecommerce-data-lake-${AWS::Region}-${Environment}'
       AccessControl: Private
       LifecycleConfiguration:
         Rules:
@@ -59,3 +81,4 @@ Resources:
     Properties:
       LogGroupName: '/aws-glue/jobs/logs-v2'
       RetentionInDays: 30
+  

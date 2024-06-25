@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Data processing stack for AWS Data Lake project (Glue)
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment (e.g., dev, prod)
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
+  GlueDatabaseName:
+    Type: String
+    Description: The name of the Glue database
+    Default: !Sub 'ecommerce_db_${Environment}'
+
+  DataLakeBucket:
+    Type: String
+    Description: The name of the S3 bucket for the data lake
+    Default: !Sub 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
+
+  GlueJobName:
+    Description: The name of the Glue job
+    Type: String
+    Default: FullLoadAndCDCProcesserJob
+
+  GlueScriptLocation:
+    Description: The S3 location of the Glue script
+    Type: String
+    Default: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/FullLoadAndCDCProcesser.py'
+
+  GlueIAMRoleName:
+    Description: The name of the IAM role for the Glue job
+    Type: String
+    Default: GlueJobRole
+
+  RawS3Path:
+    Type: String
+    Description: S3 path to the raw data
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/01_raw/'
+
+  StagingS3Path:
+    Type: String
+    Description: S3 path to the staging data
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/02_staging/'
+
+  PreprocessedS3Path:
+    Type: String
+    Description: S3 path to the preprocessed data
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/03_preprocessed/'
+
+  MasterS3Path:
+    Type: String
+    Description: S3 path to the master data
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/04_master/'
+    
+  CuratedS3Path:
+    Type: String
+    Description: S3 path to the curated data
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-dev/06_curated/'
+
+  IcebergJarS3Path:
+    Description: S3 path to the Iceberg JAR file
+    Type: String
+    Default: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/iceberg-spark3-runtime-0.12.0.jar' 
+
+  PyDeequJarS3Path:
+    Description: S3 path to the pydeequ JAR file
+    Type: String
+    Default: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/deequ-glue-1.0-SNAPSHOT-jar-with-dependencies.jar'  
+
+Resources:
+  GlueJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref GlueIAMRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: GlueJobS3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}'
+                  - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}/*'
+                  - !Sub 'arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}'
+                  - !Sub 'arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/*'
+              - Effect: 'Allow'
+                Action:
+                  - 'glue:*'
+                Resource: '*'
+                
+  GlueS3AccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: 'GlueS3AccessPolicy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action:
+              - 'glue:*'
+            Resource: '*'
+          - Effect: 'Allow'
+            Action:
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}'
+              - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}/*'
+          - Effect: 'Allow'
+            Action:
+              - 'glue:GetDatabase'
+              - 'glue:GetTable'
+              - 'glue:GetTables'
+              - 'glue:CreateTable'
+              - 'glue:UpdateTable'
+              - 'glue:GetCatalog'
+            Resource: 
+              - 'arn:aws:glue:us-east-1:730335322582:catalog'
+              - !Sub 'arn:aws:glue:us-east-1:730335322582:database/ecommerce_db_${Environment}'
+              - 'arn:aws:glue:us-east-1:730335322582:table/*'
+      Roles:
+        - !Ref GlueS3AccessRole
+
+  GlueS3AccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: "/"
+
+  GlueDatabase:
+    Type: 'AWS::Glue::Database'
+    Properties:
+      CatalogId: !Ref 'AWS::AccountId'
+      DatabaseInput:
+        Name: !Sub 'ecommerce_db_${Environment}'
+        Description: 'Database for ecommerce data lake'
+
+  GlueJob:
+    Type: 'AWS::Glue::Job'
+    Properties:
+      Name: !Sub '${GlueJobName}-${Environment}'
+      Role: !GetAtt GlueJobRole.Arn
+      Command:
+        Name: glueetl
+        ScriptLocation: !Ref GlueScriptLocation
+        PythonVersion: '3'
+      DefaultArguments:
+        "--RAW_S3_PATH": !Ref RawS3Path
+        "--STAGING_S3_PATH": !Ref StagingS3Path
+        "--PREPROCESSED_S3_PATH": !Ref PreprocessedS3Path
+        "--MASTER_S3_PATH": !Ref MasterS3Path
+        "--CURATED_S3_PATH": !Ref CuratedS3Path
+        "--enable-continuous-cloudwatch-log": "true"
+        "--enable-continuous-log-filter": "true"
+        "--enable-metrics": "true"
+        '--additional-python-modules': 'pydeequ'
+        '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
+        '--TempDir': !Sub 's3://temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
+        '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
+      GlueVersion: '3.0'
+      MaxRetries: 1
+      LogUri: !Sub "s3://${AWS::AccountId}/aws-glue/jobs/logs-v2/"
+      MaxCapacity: 2.0
+      Timeout: 2880

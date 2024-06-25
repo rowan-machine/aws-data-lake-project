@@ -1,12 +1,12 @@
-name: Deploy Storage Stack
+name: Deploy Analytics Stack
 
 on:
   push:
     branches:
       - DEV
     paths:
-      - 'cloudformation/dev/storage.yaml'
-      - '.github/workflows/deploy-storage.yaml'
+      - 'cloudformation/analytics.yaml'
+      - '.github/workflows/deploy-analytics-dev.yaml'
 
 jobs:
   deploy:
@@ -37,7 +37,7 @@ jobs:
       - name: Check if Stack Exists
         id: stack
         run: |
-          STACK_NAME=dev-storage-stack
+          STACK_NAME=dev-analytics-stack
           if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
             echo "::set-output name=stack-exists::true"
           else
@@ -47,13 +47,13 @@ jobs:
       - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
         if: steps.stack.outputs.stack-exists == 'true'
         run: |
-          STACK_NAME=dev-storage-stack
+          STACK_NAME=dev-analytics-stack
           STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
           if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
             aws cloudformation delete-stack --stack-name $STACK_NAME
             aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
           fi
 
-      - name: Deploy Dev Storage Stack
+      - name: Deploy Dev Analytics Stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/dev/storage.yaml --stack-name dev-storage-stack --capabilities CAPABILITY_NAMED_IAM
+          aws cloudformation deploy --template-file cloudformation/analytics.yaml --stack-name dev-analytics-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=dev

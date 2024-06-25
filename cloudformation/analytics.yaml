@@ -1,6 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Analytics stack for AWS Data Lake project
 
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment (e.g., dev, prod)
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
 Resources:
   AthenaExecutionRole:
     Type: 'AWS::IAM::Role'
@@ -23,8 +32,8 @@ Resources:
                   - 's3:PutObject'
                   - 's3:ListBucket'
                 Resource: 
-                  - 'arn:aws:s3:::athena-query-results-1234567890123-us-east-1'
-                  - 'arn:aws:s3:::athena-query-results-1234567890123-us-east-1/*'
+                  - !Sub 'arn:aws:s3:::athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'   #fix this
+                  - !Sub 'arn:aws:s3:::athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}/*'   #fix this
               - Effect: 'Allow'
                 Action:
                   - 'logs:CreateLogGroup'
@@ -41,7 +50,7 @@ Resources:
       State: ENABLED
       WorkGroupConfiguration:
         ResultConfiguration:
-          OutputLocation: 's3://athena-query-results-1234567890123-us-east-1/'
+          OutputLocation: !Sub 's3://athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'    #fix this
         EnforceWorkGroupConfiguration: true
         PublishCloudWatchMetricsEnabled: true
 
