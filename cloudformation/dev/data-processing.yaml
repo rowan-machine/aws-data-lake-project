@@ -30,7 +30,7 @@ Parameters:
   IcebergJarS3Path:
     Description: S3 path to the Iceberg JAR file
     Type: String
-    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-spark-3.1_2.12-1.3.1.jar'
+    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-spark3-runtime-0.12.0.jar'
 
   PyDeequJarS3Path:
     Description: S3 path to the pydeequ JAR file
