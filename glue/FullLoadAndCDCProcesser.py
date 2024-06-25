@@ -40,6 +40,7 @@ spark = SparkSession.builder \
     .config("spark.sql.catalog.curated_catalog.warehouse", args['CURATED_S3_PATH']) \
     .getOrCreate()
 
+
 sc = spark.sparkContext
 glueContext = GlueContext(sc)
 job = Job(glueContext)
