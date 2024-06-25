@@ -27,20 +27,23 @@ args = getResolvedOptions(sys.argv, [
     'SOURCE'
 ])
 
-sc = SparkContext()
+# Initialize Spark session with Iceberg configurations
+spark = SparkSession.builder \
+    .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog") \
+    .config("spark.sql.catalog.spark_catalog.type", "hive") \
+    .config("spark.sql.catalog.master_catalog", "org.apache.iceberg.spark.SparkCatalog") \
+    .config("spark.sql.catalog.master_catalog.type", "hadoop") \
+    .config("spark.sql.catalog.master_catalog.warehouse", args['MASTER_S3_PATH']) \
+    .config("spark.sql.catalog.curated_catalog", "org.apache.iceberg.spark.SparkCatalog") \
+    .config("spark.sql.catalog.curated_catalog.type", "hadoop") \
+    .config("spark.sql.catalog.curated_catalog.warehouse", args['CURATED_S3_PATH']) \
+    .getOrCreate()
+
+sc = spark.sparkContext
 glueContext = GlueContext(sc)
-spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args['JOB_NAME'], args)
-
-# Enable Iceberg catalog
-spark.conf.set("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions")
-spark.conf.set("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog")
-spark.conf.set("spark.sql.catalog.spark_catalog.type", "hive")
-spark.conf.set("spark.sql.catalog.local", "org.apache.iceberg.spark.SparkCatalog")
-spark.conf.set("spark.sql.catalog.local.type", "hadoop")
-spark.conf.set("spark.sql.catalog.local.warehouse", args['MASTER_S3_PATH'])
-spark.conf.set("spark.sql.catalog.local.warehouse", args['CURATED_S3_PATH'])
 
 # Read source data
 source_df = spark.read.format("csv").option("header", "true").load(args['RAW_S3_PATH'] + args['SOURCE'] + '/' + args['TABLE_NAME'] + '/' + args['PROCESS_TYPE'])
