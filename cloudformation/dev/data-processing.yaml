@@ -136,6 +136,7 @@ Resources:
         '--additional-python-modules': 'pydeequ'
         '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
         '--TempDir': 's3://temp-rowan-us-east-1/'
+        '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
       GlueVersion: '3.0'
       MaxCapacity: 2.0
       Timeout: 2880
