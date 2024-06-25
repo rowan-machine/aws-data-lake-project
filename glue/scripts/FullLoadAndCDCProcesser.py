@@ -6,7 +6,7 @@ import os
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--target=/tmp", "pydeequ"])
 sys.path.insert(0, '/tmp')
 
-# Explicitly set SPARK_VERSION if not already set
+# Explicitly set SPARK_VERSION if not already set 
 if 'SPARK_VERSION' not in os.environ:
     os.environ['SPARK_VERSION'] = '3.1'
 
