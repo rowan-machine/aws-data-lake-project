@@ -30,7 +30,7 @@ Parameters:
   IcebergJarS3Path:
     Description: S3 path to the Iceberg JAR file
     Type: String
-    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-spark-runtime-3.5_2.12-1.5.2.jar'
+    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-aws-bundle-1.5.2.jar'
 
 Resources:
   GlueJobRole:
