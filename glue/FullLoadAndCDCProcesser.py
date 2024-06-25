@@ -14,6 +14,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit, current_date, expr, when
 from pyspark.sql.window import Window
 import pyspark.sql.functions as F
+from pydeequ.checks import Check, CheckLevel
+from pydeequ.verification import VerificationSuite
 
 args = getResolvedOptions(sys.argv, [
     'JOB_NAME', 
