@@ -2,6 +2,32 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Storage stack for AWS Data Lake project
 
 Resources:
+  GlueAssetsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'aws-glue-assets-730335322582-us-east-1'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAssets
+            Status: Enabled
+            ExpirationInDays: 365
+
+  DataLakeProjectRepoBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'aws-data-lake-project-repo'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireRepo
+            Status: Enabled
+            ExpirationInDays: 365
+
   AthenaQueryResultsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -27,3 +53,9 @@ Resources:
             Transitions:
               - StorageClass: GLACIER
                 TransitionInDays: 30
+
+  GlueJobLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: '/aws-glue/jobs/logs-v2'
+      RetentionInDays: 30
