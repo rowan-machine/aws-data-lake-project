@@ -8,5 +8,5 @@ ecommerce_dbt_project:
       region_name: us-east-1
       schema: ecommerce_dbt_dev  # The schema where your models will be deployed
       database: ecommerce_athena_database  # The Glue/Athena catalog name
-      work_group: primary  # Optional, if you have a specific workgroup
+      work_group: data-lake-workgroup  # Optional, if you have a specific workgroup
       aws_profile_name: default  # Optional, if using AWS named profiles

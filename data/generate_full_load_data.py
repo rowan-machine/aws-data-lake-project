@@ -52,6 +52,6 @@ df_products = pd.DataFrame(products)
 df_orders = pd.DataFrame(orders)
 
 # Save DataFrames as CSV files
-df_customers.to_csv('customers.csv', index=False)
-df_products.to_csv('products.csv', index=False)
-df_orders.to_csv('orders.csv', index=False)
+df_customers.to_csv('customers_20240619.csv', index=False)
+df_products.to_csv('products_20240619.csv', index=False)
+df_orders.to_csv('orders_20240619.csv', index=False)

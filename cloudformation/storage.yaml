@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create S3 buckets and CloudWatch log group for AWS Glue with environment separation
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment (e.g., dev, prod)
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
+Resources:
+  TempDirBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAssets
+            Status: Enabled
+            ExpirationInDays: 365
+
+  GlueAssetsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireAssets
+            Status: Enabled
+            ExpirationInDays: 365
+
+  DataLakeProjectRepoBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'aws-data-lake-project-repo-${Environment}'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireRepo
+            Status: Enabled
+            ExpirationInDays: 365
+
+  AthenaQueryResultsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireQueryResults
+            Status: Enabled
+            ExpirationInDays: 30
+
+  GlueJobLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws-glue/jobs/logs-v2-${Environment}'
+      RetentionInDays: 30

@@ -1,0 +1,40 @@
+name: Upload CloudFormation Templates to S3
+
+on:
+  push:
+    branches:
+      - DEV
+    paths:
+      - 'cloudformation/**'
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Upload CloudFormation templates to S3
+        run: |
+          aws s3 cp cloudformation/storage.yaml s3://aws-data-lake-project-repo-dev/cloudformation/storage.yaml
+          aws s3 cp cloudformation/data-processing.yaml s3://aws-data-lake-project-repo-dev/cloudformation/data-processing.yaml
+          aws s3 cp cloudformation/analytics.yaml s3://aws-data-lake-project-repo-dev/cloudformation/analytics.yaml

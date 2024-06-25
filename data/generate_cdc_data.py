@@ -60,6 +60,6 @@ cdc_products = generate_cdc_data(df_products, 'products')
 cdc_orders = generate_cdc_data(df_orders, 'orders')
 
 # Save CDC DataFrames as CSV files
-cdc_customers.to_csv('cdc_customers.csv', index=False)
-cdc_products.to_csv('cdc_products.csv', index=False)
-cdc_orders.to_csv('cdc_orders.csv', index=False)
+cdc_customers.to_csv('customers_cdc_2024061906.csv', index=False)
+cdc_products.to_csv('products_cdc_2024061906.csv', index=False)
+cdc_orders.to_csv('orders_cdc_2024061906.csv', index=False)

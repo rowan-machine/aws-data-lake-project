@@ -16,5 +16,5 @@ job.init(args['JOB_NAME'], args)
 # Sample transformation
 datasource0 = glueContext.create_dynamic_frame.from_catalog(database = "ecommerce_db_dev", table_name = "orders", transformation_ctx = "datasource0")
 applymapping1 = ApplyMapping.apply(frame = datasource0, mappings = [("order_id", "string", "customer_id", "string", "product_id", "string", "quantity", "int", "price", "float", "order_date", "date")], transformation_ctx = "applymapping1")
-datasink2 = glueContext.write_dynamic_frame.from_options(frame = applymapping1, connection_type = "s3", connection_options = {"path": "s3://ecommerce-data-lake-dev/raw-data/netsuite/cdc/orders/"}, format = "json", transformation_ctx = "datasink2")
+datasink2 = glueContext.write_dynamic_frame.from_options(frame = applymapping1, connection_type = "s3", connection_options = {"path": "s3://ecommerce-data-lake-us-east-1-dev/processed/merged-orders/"}, format = "json", transformation_ctx = "datasink2")
 job.commit()
