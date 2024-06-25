@@ -138,5 +138,9 @@ Resources:
         '--TempDir': 's3://temp-rowan-us-east-1/'
         '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
       GlueVersion: '3.0'
+      MaxRetries: 1
+      NumberOfWorkers: 10
+      WorkerType: 'G.1X'
+      LogUri: 's3://my-cloudwatch-logs-ecommerce-data-lake-us-east-1/glue-logs'
       MaxCapacity: 2.0
       Timeout: 2880
