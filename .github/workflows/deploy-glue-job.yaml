@@ -3,14 +3,20 @@ name: Deploy Glue Job Script
 on:
   push:
     branches:
-      - DEV  # or the branch you want to trigger this workflow
+      - main
+      - DEV
     paths:
-      - 'glue/scripts/FullLoadAndCDCProcesser.py'
-      - '.github/workflows/deploy-glue-job-dev.yaml'
+      - 'glue/scripts/'
+      - '.github/workflows/deploy-glue-job.yaml'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, prod]  # Add environments here
+        region: [us-east-1]
+        account: [730335322582]
 
     steps:
     - name: Checkout repository
@@ -25,11 +31,11 @@ jobs:
 
     - name: Sync Glue script to S3
       run: |
-        aws s3 cp glue/scripts/FullLoadAndCDCProcesser.py s3://aws-glue-assets-730335322582-us-east-1-dev/scripts/FullLoadAndCDCProcesser.py
+        aws s3 cp glue/scripts/ s3://aws-glue-assets-${{ matrix.account }}-${{ matrix.region }}-${{ matrix.environment }}/scripts/
 
     - name: Deploy CloudFormation stack
       run: |
         aws cloudformation deploy \
           --template-file cloudformation/data-processing.yaml \
-          --stack-name dev-data-processing-stack \
+          --stack-name data-processing-stack \
           --capabilities CAPABILITY_NAMED_IAM

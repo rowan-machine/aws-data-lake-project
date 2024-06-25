@@ -3,6 +3,7 @@ name: Upload CloudFormation Templates to S3
 on:
   push:
     branches:
+      - main
       - DEV
     paths:
       - 'cloudformation/**'
@@ -10,6 +11,9 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, prod]  # Add environments here
 
     steps:
       - name: Checkout code
@@ -35,6 +39,6 @@ jobs:
 
       - name: Upload CloudFormation templates to S3
         run: |
-          aws s3 cp cloudformation/storage.yaml s3://aws-data-lake-project-repo-dev/cloudformation/storage.yaml
-          aws s3 cp cloudformation/data-processing.yaml s3://aws-data-lake-project-repo-dev/cloudformation/data-processing.yaml
-          aws s3 cp cloudformation/analytics.yaml s3://aws-data-lake-project-repo-dev/cloudformation/analytics.yaml
+          aws s3 cp cloudformation/storage.yaml s3://aws-data-lake-project-repo-${{ matrix.environment }}/cloudformation/storage.yaml
+          aws s3 cp cloudformation/data-processing.yaml s3://aws-data-lake-project-repo-${{ matrix.environment }}/cloudformation/data-processing.yaml
+          aws s3 cp cloudformation/analytics.yaml s3://aws-data-lake-project-repo-${{ matrix.environment }}/cloudformation/analytics.yaml
