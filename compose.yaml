@@ -1,0 +1,12 @@
+services:
+  glue:
+    image: local-glue-env
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks/development:/opt/glue/notebooks/development
+      - ./glue/scripts:/opt/glue/scripts
+    environment:
+      - AWS_ACCESS_KEY_ID=your_access_key
+      - AWS_SECRET_ACCESS_KEY=your_secret_key
+      - SPARK_VERSION=3.1
