@@ -1,4 +1,4 @@
-name: Deploy Data Processing Stack
+name: Deploy Data Processing Stack 
 
 on:
   push:
@@ -56,4 +56,4 @@ jobs:
 
       - name: Deploy Dev Data Processing Stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/dev/data-processing.yaml --stack-name dev-data-processing-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=dev
+          aws cloudformation deploy --template-file cloudformation/data-processing.yaml --stack-name dev-data-processing-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=dev
