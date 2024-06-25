@@ -11,6 +11,9 @@ RUN pip3 install jupyter pydeequ boto3 pyspark
 # Copy AWS Glue libraries
 COPY aws-glue-libs/dist/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
 
+# Create directory for jars
+RUN mkdir -p /opt/glue/jars
+
 # Download the Iceberg runtime jar using curl
 RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar
 
