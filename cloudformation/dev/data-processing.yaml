@@ -30,7 +30,7 @@ Parameters:
   IcebergJarS3Path:
     Description: S3 path to the Iceberg JAR file
     Type: String
-    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-aws-bundle-1.5.2.jar'
+    Default: 's3://aws-glue-assets-730335322582-us-east-1/dependencies/iceberg-spark-3.1_2.12-1.3.1.jar'
 
 Resources:
   GlueJobRole:
@@ -131,6 +131,6 @@ Resources:
         '--additional-python-modules': 'pydeequ'
         '--extra-jars': !Ref IcebergJarS3Path
         '--TempDir': 's3://temp-rowan-us-east-1/'
-      GlueVersion: '4.0'
+      GlueVersion: '3.0'
       MaxCapacity: 2.0
       Timeout: 2880
