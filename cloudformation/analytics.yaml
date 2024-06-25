@@ -45,7 +45,7 @@ Resources:
   AthenaWorkGroup:
     Type: 'AWS::Athena::WorkGroup'
     Properties:
-      Name: data-lake-workgroup
+      Name: !Sub data-lake-workgroup-${Environment}
       Description: Workgroup for Data Lake project
       State: ENABLED
       WorkGroupConfiguration:
