@@ -2,7 +2,6 @@ import sys
 import subprocess
 
 # Install Deequ
-#
 subprocess.check_call([sys.executable, "-m", "pip", "install", "--target=/tmp", "pydeequ"])
 sys.path.insert(0, '/tmp')
 
