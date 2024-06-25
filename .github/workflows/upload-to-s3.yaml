@@ -11,9 +11,6 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [dev, prod]  # Add environments here
 
     steps:
       - name: Checkout code
@@ -37,8 +34,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Set Environment Variable
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
+
       - name: Upload CloudFormation templates to S3
         run: |
-          aws s3 cp cloudformation/storage.yaml s3://aws-data-lake-project-repo-${{ matrix.environment }}/cloudformation/storage.yaml
-          aws s3 cp cloudformation/data-processing.yaml s3://aws-data-lake-project-repo-${{ matrix.environment }}/cloudformation/data-processing.yaml
-          aws s3 cp cloudformation/analytics.yaml s3://aws-data-lake-project-repo-${{ matrix.environment }}/cloudformation/analytics.yaml
+          aws s3 cp cloudformation/storage.yaml s3://aws-data-lake-project-repo-${{ env.ENVIRONMENT }}/cloudformation/storage.yaml
+          aws s3 cp cloudformation/data-processing.yaml s3://aws-data-lake-project-repo-${{ env.ENVIRONMENT }}/cloudformation/data-processing.yaml
+          aws s3 cp cloudformation/analytics.yaml s3://aws-data-lake-project-repo-${{ env.ENVIRONMENT }}/cloudformation/analytics.yaml

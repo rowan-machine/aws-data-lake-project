@@ -12,9 +12,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [dev, prod]  # Add environments here
 
     steps:
       - name: Checkout code
@@ -38,10 +35,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Set Environment Variable
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
+
       - name: Check if Stack Exists
         id: stack
         run: |
-          STACK_NAME=storage-stack
+          STACK_NAME=${{ env.ENVIRONMENT }}-storage-stack
           if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
             echo "::set-output name=stack-exists::true"
           else
@@ -51,7 +57,7 @@ jobs:
       - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
         if: steps.stack.outputs.stack-exists == 'true'
         run: |
-          STACK_NAME=storage-stack
+          STACK_NAME=${{ env.ENVIRONMENT }}-storage-stack
           STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
           if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
             aws cloudformation delete-stack --stack-name $STACK_NAME
@@ -60,4 +66,4 @@ jobs:
 
       - name: Deploy Storage Stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/storage.yaml --stack-name storage-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=${{ matrix.environment }}
+          aws cloudformation deploy --template-file cloudformation/storage.yaml --stack-name ${{ env.ENVIRONMENT }}-storage-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=${{ env.ENVIRONMENT }}
