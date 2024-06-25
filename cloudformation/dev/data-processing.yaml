@@ -172,6 +172,6 @@ Resources:
         '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
       GlueVersion: '3.0'
       MaxRetries: 1
-      LogUri: 's3://my-cloudwatch-logs-ecommerce-data-lake-us-east-1/glue-logs'
+      LogUri: !Sub "s3://${AWS::AccountId}/aws-glue/jobs/logs-v2/"
       MaxCapacity: 2.0
       Timeout: 2880
