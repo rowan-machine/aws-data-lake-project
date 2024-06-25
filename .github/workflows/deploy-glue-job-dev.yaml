@@ -30,6 +30,6 @@ jobs:
     - name: Deploy CloudFormation stack
       run: |
         aws cloudformation deploy \
-          --template-file cloudformation/dev/data-processing.yaml \
+          --template-file cloudformation/data-processing.yaml \
           --stack-name dev-data-processing-stack \
           --capabilities CAPABILITY_NAMED_IAM
