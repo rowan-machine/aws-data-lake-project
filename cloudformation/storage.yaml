@@ -53,7 +53,7 @@ Resources:
   AthenaQueryResultsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: !Sub 'athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}''
+      BucketName: !Sub 'athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'
       AccessControl: Private
       VersioningConfiguration:
         Status: Enabled
@@ -63,22 +63,8 @@ Resources:
             Status: Enabled
             ExpirationInDays: 30
 
-  DevDataLakeBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: !Sub 'ecommerce-data-lake-${AWS::Region}-${Environment}'
-      AccessControl: Private
-      LifecycleConfiguration:
-        Rules:
-          - Id: GlacierRule
-            Status: Enabled
-            Transitions:
-              - StorageClass: GLACIER
-                TransitionInDays: 30
-
   GlueJobLogGroup:
     Type: 'AWS::Logs::LogGroup'
     Properties:
       LogGroupName: !Sub '/aws-glue/jobs/logs-v2-${Environment}'
       RetentionInDays: 30
-  
