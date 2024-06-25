@@ -56,4 +56,4 @@ jobs:
 
       - name: Deploy Dev Storage Stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/dev/storage.yaml --stack-name dev-storage-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=dev
+          aws cloudformation deploy --template-file cloudformation/storage.yaml --stack-name dev-storage-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=dev
