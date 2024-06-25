@@ -32,8 +32,8 @@ Resources:
                   - 's3:PutObject'
                   - 's3:ListBucket'
                 Resource: 
-                  - !Sub 'arn:aws:s3:::athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'   #fix this
-                  - !Sub 'arn:aws:s3:::athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}/*'   #fix this
+                  - !Sub 'arn:aws:s3:::athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'
+                  - !Sub 'arn:aws:s3:::athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}/*'
               - Effect: 'Allow'
                 Action:
                   - 'logs:CreateLogGroup'
@@ -50,7 +50,7 @@ Resources:
       State: ENABLED
       WorkGroupConfiguration:
         ResultConfiguration:
-          OutputLocation: !Sub 's3://athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'    #fix this
+          OutputLocation: !Sub 's3://athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'
         EnforceWorkGroupConfiguration: true
         PublishCloudWatchMetricsEnabled: true
 
