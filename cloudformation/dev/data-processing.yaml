@@ -27,6 +27,31 @@ Parameters:
     Type: String
     Default: GlueJobRole
 
+  RawS3Path:
+    Type: String
+    Description: S3 path to the raw data
+    Default: s3://ecommerce-data-lake-us-east-1-dev/01_raw/
+
+  StagingS3Path:
+    Type: String
+    Description: S3 path to the staging data
+    Default: s3://ecommerce-data-lake-us-east-1-dev/02_staging/
+
+  PreprocessedS3Path:
+    Type: String
+    Description: S3 path to the preprocessed data
+    Default: s3://ecommerce-data-lake-us-east-1-dev/03_preprocessed/
+
+  MasterS3Path:
+    Type: String
+    Description: S3 path to the master data
+    Default: s3://ecommerce-data-lake-us-east-1-dev/04_master/
+    
+  CuratedS3Path:
+    Type: String
+    Description: S3 path to the curated data
+    Default: s3://ecommerce-data-lake-us-east-1-dev/06_curated/
+
   IcebergJarS3Path:
     Description: S3 path to the Iceberg JAR file
     Type: String
@@ -133,6 +158,14 @@ Resources:
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
       DefaultArguments:
+        "--RAW_S3_PATH": !Ref RawS3Path
+        "--STAGING_S3_PATH": !Ref StagingS3Path
+        "--PREPROCESSED_S3_PATH": !Ref PreprocessedS3Path
+        "--MASTER_S3_PATH": !Ref MasterS3Path
+        "--CURATED_S3_PATH": !Ref CuratedS3Path
+        "--enable-continuous-cloudwatch-log": "true"
+        "--enable-continuous-log-filter": "true"
+        "--enable-metrics": "true"
         '--additional-python-modules': 'pydeequ'
         '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
         '--TempDir': 's3://temp-rowan-us-east-1/'

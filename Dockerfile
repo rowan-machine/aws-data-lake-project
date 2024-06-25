@@ -4,7 +4,7 @@ FROM apache/spark-py:latest
 # Install necessary packages
 USER root
 RUN apt-get update \
-    && apt-get install -y python3-pip python3-setuptools unzip
+    && apt-get install -y python3-pip python3-setuptools unzip curl
 RUN pip3 install --upgrade pip wheel
 RUN pip3 install jupyter pydeequ boto3 pyspark
 
