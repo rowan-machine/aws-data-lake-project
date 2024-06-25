@@ -45,5 +45,5 @@ jobs:
       run: |
         aws cloudformation deploy \
           --template-file cloudformation/data-processing.yaml \
-          --stack-name data-processing-stack \
+          --stack-name ${{ env.ENVIRONMENT }}-data-processing-stack \
           --capabilities CAPABILITY_NAMED_IAM
