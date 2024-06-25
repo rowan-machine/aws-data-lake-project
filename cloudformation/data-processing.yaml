@@ -13,12 +13,12 @@ Parameters:
   GlueDatabaseName:
     Type: String
     Description: The name of the Glue database
-    Default: !Sub 'ecommerce_db_${Environment}'
+    Default: 'ecommerce_db_${Environment}'
 
   DataLakeBucket:
     Type: String
     Description: The name of the S3 bucket for the data lake
-    Default: !Sub 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
+    Default: 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
 
   GlueJobName:
     Description: The name of the Glue job
@@ -28,7 +28,7 @@ Parameters:
   GlueScriptLocation:
     Description: The S3 location of the Glue script
     Type: String
-    Default: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/FullLoadAndCDCProcesser.py'
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/FullLoadAndCDCProcesser.py'
 
   GlueIAMRoleName:
     Description: The name of the IAM role for the Glue job
@@ -38,37 +38,37 @@ Parameters:
   RawS3Path:
     Type: String
     Description: S3 path to the raw data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/01_raw/'
+    Default: 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/01_raw/'
 
   StagingS3Path:
     Type: String
     Description: S3 path to the staging data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/02_staging/'
+    Default: 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/02_staging/'
 
   PreprocessedS3Path:
     Type: String
     Description: S3 path to the preprocessed data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/03_preprocessed/'
+    Default: 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/03_preprocessed/'
 
   MasterS3Path:
     Type: String
     Description: S3 path to the master data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/04_master/'
+    Default: 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/04_master/'
     
   CuratedS3Path:
     Type: String
     Description: S3 path to the curated data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-dev/06_curated/'
+    Default: 's3://ecommerce-data-lake-${AWS::Region}-dev/06_curated/'
 
   IcebergJarS3Path:
     Description: S3 path to the Iceberg JAR file
     Type: String
-    Default: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/iceberg-spark3-runtime-0.12.0.jar' 
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/iceberg-spark3-runtime-0.12.0.jar' 
 
   PyDeequJarS3Path:
     Description: S3 path to the pydeequ JAR file
     Type: String
-    Default: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/deequ-glue-1.0-SNAPSHOT-jar-with-dependencies.jar'  
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/deequ-glue-1.0-SNAPSHOT-jar-with-dependencies.jar'  
 
 Resources:
   GlueJobRole:
