@@ -20,15 +20,20 @@ Parameters:
     Description: The name of the S3 bucket for the data lake
     Default: 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
 
-  GlueJobName:
+  MasterDataProcessingGlueJobName:
     Description: The name of the Glue job
     Type: String
-    Default: FullLoadAndCDCProcesserJob
+    Default: '${Environment}-MasterDataProcessingGlueJob'
 
-  GlueScriptLocation:
-    Description: The S3 location of the Glue script
+  GlueJobScriptS3Bucket:
     Type: String
-    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/FullLoadAndCDCProcesser.py'
+    Description: S3 bucket where the Glue job scripts are stored
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/'
+
+  GlueJobScriptS3Key:
+    Type: String
+    Description: S3 key of the main Glue job script
+    Default: 'etl/MasterDataProcessingJob/main_script.py'
 
   GlueIAMRoleName:
     Description: The name of the IAM role for the Glue job
@@ -70,6 +75,16 @@ Parameters:
     Type: String
     Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/deequ-glue-1.0-SNAPSHOT-jar-with-dependencies.jar'  
 
+  HadoopAWSPath:
+    Description: S3 path to the Hadoop AWS JAR file
+    Type: String
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/hadoop-aws-3.2.0.jar'  
+
+  AWSSDKPath:
+    Description: S3 path to the AWS SDK JAR file
+    Type: String
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/aws-java-sdk-bundle-1.11.375.jar'  
+
 Resources:
   GlueJobRole:
     Type: 'AWS::IAM::Role'
@@ -106,7 +121,7 @@ Resources:
   GlueS3AccessPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: 'GlueS3AccessPolicy'
+      PolicyName: !Sub ${GlueS3AccessPolicy}
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -159,7 +174,7 @@ Resources:
   GlueJob:
     Type: 'AWS::Glue::Job'
     Properties:
-      Name: !Sub '${GlueJobName}-${Environment}'
+      Name: 'MasterDataProcessingGlueJobName'
       Role: !GetAtt GlueJobRole.Arn
       Command:
         Name: glueetl
@@ -175,11 +190,11 @@ Resources:
         "--enable-continuous-log-filter": "true"
         "--enable-metrics": "true"
         '--additional-python-modules': 'pydeequ'
-        '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
+        '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path},${HadoopAWSPath},${AWSSDKPath}"
         '--TempDir': !Sub 's3://temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
         '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
       GlueVersion: '3.0'
       MaxRetries: 1
-      LogUri: !Sub "s3://${AWS::AccountId}/aws-glue/jobs/logs-v2/"
+      LogUri: !Sub "s3://${AWS::AccountId}/aws-glue/jobs/logs-v2-${Environment}/"
       MaxCapacity: 2.0
       Timeout: 2880
