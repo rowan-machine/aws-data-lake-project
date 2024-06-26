@@ -23,8 +23,8 @@ RUN mkdir -p /opt/glue/jars /var/log/glue
 COPY aws-glue-libs/ /opt/glue
 COPY glue/scripts /opt/glue/scripts
 
-# Install the extracted package
-RUN pip install /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
+# Copy AWS Glue libraries
+COPY aws-glue-libs/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
 
 # Download the Iceberg runtime jar and additional JARs using wget
 RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar && \
@@ -34,16 +34,6 @@ RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven
 # Set environment variables to include the AWS Glue libraries
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$PATH
-ENV PYTHONPATH=$SPARK_HOME/python/:$SPARK_HOME/python/lib/py4j-0.10.9-src.zip:/opt/glue/aws-glue-libs/PyGlue.zip
-
-# Add the necessary JAR files for Hadoop AWS
-# COPY jars/hadoop-aws-3.2.0.jar /opt/glue/jars/hadoop-aws-3.2.0.jar
-# COPY jars/aws-java-sdk-bundle-1.11.375.jar /opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar
-
-# Download the Iceberg runtime jar using curl
-# RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar
-
-# Set environment variables to include the AWS Glue libraries
 ENV PYTHONPATH="$PYTHONPATH:/opt/glue/aws_glue_libs-4.0.0-py3.8.egg"
 
 # Copy the logging configuration file
@@ -69,7 +59,7 @@ RUN python3 -c "from jupyter_server.auth import passwd; print(passwd('1234'))" >
 # Copy the script to the container
 COPY glue/scripts/ /opt/glue/scripts/
 
-# Copy Iceberg and PyDeequ JAR files
+# Copy JAR files
 COPY jars/ /opt/glue/jars/
 
 # Run Jupyter Notebook

@@ -1,13 +1,18 @@
-from utils import get_spark_session, read_config, add_ingestion_date, remove_duplicates, save_parquet_table
+from utils import get_spark_session, read_config, add_ingestion_date, remove_duplicates, save_parquet_table, log_etl_step
+import logging
 
-def stage_data(glueContext, args):
-    config = read_config('config.json')
-    spark = get_spark_session("Staging", config['spark']['iceberg_jar_path'], config['spark']['pydeequ_jar_path'], args['MASTER_S3_PATH'])
+logger = logging.getLogger(__name__)
 
-    raw_path = f"{args['RAW_S3_PATH']}{args['SOURCE']}/{args['TABLE_NAME']}/{args['PROCESS_TYPE']}/"
-    df = spark.read.format("csv").option("header", "true").load(raw_path)
-    df = add_ingestion_date(df)
-    df = remove_duplicates(df, ["order_id"])
-
-    save_parquet_table(df, f"{args['STAGING_S3_PATH']}{args['TABLE_NAME']}/{args['PROCESS_TYPE']}/")
-    return df
+def stage_data(spark, args, paths):
+    try:
+        raw_path = f"{paths['raw']}{args['SOURCE']}/{args['TABLE_NAME']}/{args['PROCESS_TYPE']}/"
+        df = spark.read.format("csv").option("header", "true").load(raw_path)
+        df = add_ingestion_date(df)
+        df = remove_duplicates(df, ["order_id"])
+        save_parquet_table(df, f"{paths['staging']}{args['TABLE_NAME']}/{args['PROCESS_TYPE']}/")
+        log_etl_step("stage_data", "success", paths['log_bucket'], f"staging/{args['TABLE_NAME']}/{args['PROCESS_TYPE']}/log.json")
+        return df
+    except Exception as e:
+        logger.error(f"Staging data failed: {e}")
+        log_etl_step("stage_data", "failure", paths['log_bucket'], f"staging/{args['TABLE_NAME']}/{args['PROCESS_TYPE']}/log.json")
+        raise
