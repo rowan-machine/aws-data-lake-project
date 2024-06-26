@@ -3,10 +3,11 @@ name: Deploy Data Processing Stack
 on:
   push:
     branches:
+      - main
       - DEV
     paths:
       - 'cloudformation/data-processing.yaml'
-      - '.github/workflows/deploy-data-processing-dev.yaml'
+      - '.github/workflows/deploy-data-processing.yaml'
 
 jobs:
   deploy:
@@ -34,10 +35,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Set Environment Variable
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
+
       - name: Check if Stack Exists
         id: stack
         run: |
-          STACK_NAME=dev-data-processing-stack
+          STACK_NAME=${{ env.ENVIRONMENT }}-data-processing-stack
           if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
             echo "::set-output name=stack-exists::true"
           else
@@ -47,13 +57,13 @@ jobs:
       - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
         if: steps.stack.outputs.stack-exists == 'true'
         run: |
-          STACK_NAME=dev-data-processing-stack
+          STACK_NAME=${{ env.ENVIRONMENT }}-data-processing-stack
           STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
           if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
             aws cloudformation delete-stack --stack-name $STACK_NAME
             aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
           fi
 
-      - name: Deploy Dev Data Processing Stack
+      - name: Deploy Data Processing Stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/data-processing.yaml --stack-name dev-data-processing-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=dev
+          aws cloudformation deploy --template-file cloudformation/data-processing.yaml --stack-name ${{ env.ENVIRONMENT }}-data-processing-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=${{ env.ENVIRONMENT }}
