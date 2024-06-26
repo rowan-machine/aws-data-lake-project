@@ -1,4 +1,5 @@
 import pandas as pd
+import random
 from utils import current_timestamp, generate_integer_id, fake
 
 # Load existing data from fixed file names

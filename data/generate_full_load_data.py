@@ -1,4 +1,5 @@
 import pandas as pd
+import random
 from utils import generate_customers, generate_products, generate_orders, current_timestamp
 from config import NUM_RECORDS
 
