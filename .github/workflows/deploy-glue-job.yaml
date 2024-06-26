@@ -24,19 +24,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ matrix.region }}
-		
-		  - name: Set Environment Variable
-			  id: set-env
-			  run: |
-				  if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
-					  echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-				  elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-					  echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-				  fi
+      
+      - name: Set Environment Variable
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
 
       - name: Sync Glue script to S3
         run: |
-          aws s3 cp glue/scripts/ s3://aws-glue-assets-${{ matrix.account }}-${{ matrix.region }}-${{ env.ENVIRONMENT }}/scripts/
+          aws s3 cp glue/scripts/ s3://aws-glue-assets-${{ matrix.account }}-${{ matrix.region }}-${ env.ENVIRONMENT }}/scripts/ --recursive
 
       - name: Deploy CloudFormation stack
         run: |
