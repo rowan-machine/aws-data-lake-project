@@ -75,16 +75,6 @@ Parameters:
     Type: String
     Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/deequ-glue-1.0-SNAPSHOT-jar-with-dependencies.jar'  
 
-  HadoopAWSPath:
-    Description: S3 path to the Hadoop AWS JAR file
-    Type: String
-    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/hadoop-aws-3.2.0.jar'  
-
-  AWSSDKPath:
-    Description: S3 path to the AWS SDK JAR file
-    Type: String
-    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/aws-java-sdk-bundle-1.11.375.jar'  
-
 Resources:
   GlueJobRole:
     Type: 'AWS::IAM::Role'
@@ -189,8 +179,9 @@ Resources:
         "--enable-continuous-cloudwatch-log": "true"
         "--enable-continuous-log-filter": "true"
         "--enable-metrics": "true"
+        '--spark-event-logs-path': !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/spark-logs/'
         '--additional-python-modules': 'pydeequ'
-        '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path},${HadoopAWSPath},${AWSSDKPath}"
+        '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
         '--TempDir': !Sub 's3://temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
         '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
       GlueVersion: '3.0'
