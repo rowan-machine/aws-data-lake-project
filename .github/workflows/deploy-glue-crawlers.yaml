@@ -1,39 +1,28 @@
-name: Deploy Analytics Stack 
+name: Deploy Glue Crawlers
 
 on:
   push:
     branches:
       - main
-      - DEV
+      #- DEV
     paths:
-      - 'cloudformation/analytics.yaml'
-      - '.github/workflows/deploy-analytics.yaml'
+      - 'cloudformation/glue-crawlers.yaml'
+      - '.github/workflows/deploy-glue-crawlers.yaml'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install AWS CLI
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ matrix.region }}
 
       - name: Set Environment Variable
         id: set-env
@@ -47,7 +36,7 @@ jobs:
       - name: Check if Stack Exists
         id: stack
         run: |
-          STACK_NAME=${{ env.ENVIRONMENT }}-analytics-stack
+          STACK_NAME=${{ env.ENVIRONMENT }}-glue-crawlers-stack
           if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
             echo "::set-output name=stack-exists::true"
           else
@@ -57,16 +46,17 @@ jobs:
       - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
         if: steps.stack.outputs.stack-exists == 'true'
         run: |
-          STACK_NAME=${{ env.ENVIRONMENT }}-analytics-stack
+          STACK_NAME=${{ env.ENVIRONMENT }}-glue-crawlers-stack
           STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
           if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
             aws cloudformation delete-stack --stack-name $STACK_NAME
             aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
           fi
 
-      - name: Deploy Analytics Stack
+      - name: Deploy CloudFormation stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/analytics.yaml \
-            --stack-name ${{ env.ENVIRONMENT }}-analytics-stack \
+          aws cloudformation deploy \
+            --template-file cloudformation/glue-crawlers.yaml \
+            --stack-name ${{ env.ENVIRONMENT }}-glue-crawlers-stack \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides Environment=${{ env.ENVIRONMENT }}

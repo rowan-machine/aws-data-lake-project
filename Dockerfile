@@ -22,9 +22,7 @@ COPY requirements.txt .
 RUN pip3 cache purge
 
 # Install packages from requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt
-
-# RUN pip3 install jupyter boto3 pyspark pandas notebook pydeequ==1.0.5
+RUN pip3 install --no-cache-dir --no-cache -r requirements.txt
 
 # Create directory for Glue libraries and jars
 RUN mkdir -p /opt/glue/jars /var/log/glue
