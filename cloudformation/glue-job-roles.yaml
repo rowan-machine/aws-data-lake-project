@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Data processing stack for AWS Data Lake project (Glue) with environment separation
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment (e.g., dev, prod)
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
+  GlueIAMRoleName:
+    Description: The name of the IAM role for the Glue job
+    Type: String
+    Default: GlueJobRole-${Environment}
+
+  GlueS3AccessPolicyName:
+    Description: The name of the IAM policy for the Glue job's S3 Access
+    Type: String
+    Default: GlueS3AccessPolicy-${Environment}
+
+  GlueS3AccessRoleName:
+    Description: The name of the IAM role for the Glue job's S3 Access
+    Type: String
+    Default: GlueS3AccessRole-${Environment}
+    
+
+GlueJobRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref GlueIAMRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: GlueJobS3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                Resource:
+                  - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}'
+                  - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}/*'
+                  - !Sub 'arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}'
+                  - !Sub 'arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/*'
+              - Effect: 'Allow'
+                Action:
+                  - 'glue:*'
+                Resource: '*'
+                
+  GlueS3AccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: !Ref GlueS3AccessPolicyName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action:
+              - 'glue:*'
+            Resource: '*'
+          - Effect: 'Allow'
+            Action:
+              - 's3:GetObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}'
+              - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}/*'
+          - Effect: 'Allow'
+            Action:
+              - 'glue:GetDatabase'
+              - 'glue:GetTable'
+              - 'glue:GetTables'
+              - 'glue:CreateTable'
+              - 'glue:UpdateTable'
+              - 'glue:GetCatalog'
+            Resource: 
+              - 'arn:aws:glue:us-east-1:730335322582:catalog'
+              - !Sub 'arn:aws:glue:us-east-1:730335322582:database/ecommerce_db_${Environment}'
+              - 'arn:aws:glue:us-east-1:730335322582:table/*'
+      Roles:
+        - !Ref GlueS3AccessRole
+
+  GlueS3AccessRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: !Ref GlueS3AccessRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'glue.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: "/"
