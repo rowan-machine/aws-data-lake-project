@@ -1,0 +1,69 @@
+name: Deploy Glue Job Roles Stack 
+
+on:
+  push:
+    branches:
+      - main
+      - DEV
+    paths:
+      - 'cloudformation/glue-job-roles.yaml'
+      - '.github/workflows/deploy-glue-job-roles.yaml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set Environment Variable
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
+
+      - name: Check if Stack Exists
+        id: stack
+        run: |
+          STACK_NAME=${{ env.ENVIRONMENT }}-glue-job-roles-stack
+          if aws cloudformation describe-stacks --stack-name $STACK_NAME; then
+            echo "::set-output name=stack-exists::true"
+          else
+            echo "::set-output name=stack-exists::false"
+          fi
+
+      - name: Delete Existing Stack if in ROLLBACK_COMPLETE State
+        if: steps.stack.outputs.stack-exists == 'true'
+        run: |
+          STACK_NAME=${{ env.ENVIRONMENT }}-glue-job-roles-stack
+          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].StackStatus" --output text)
+          if [ "$STACK_STATUS" == "ROLLBACK_COMPLETE" ]; then
+            aws cloudformation delete-stack --stack-name $STACK_NAME
+            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME
+          fi
+
+      - name: Deploy Glue Job Roles Stack
+        run: |
+          aws cloudformation deploy --template-file cloudformation/glue-job-roles.yaml --stack-name ${{ env.ENVIRONMENT }}-glue-job-roles-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=${{ env.ENVIRONMENT }}
