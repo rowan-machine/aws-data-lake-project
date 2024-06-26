@@ -3,7 +3,7 @@ import random
 from datetime import datetime
 from faker import Faker
 import os
-from dotenv import load_dotenv
+from dotenv.main import load_dotenv
 
 load_dotenv()
 

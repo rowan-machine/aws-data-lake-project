@@ -14,6 +14,10 @@ COPY aws-glue-libs/dist/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.
 # Create directory for jars
 RUN mkdir -p /opt/glue/jars
 
+# Add the necessary JAR files for Hadoop AWS
+COPY jars/hadoop-aws-3.2.0.jar /opt/glue/jars/hadoop-aws-3.2.0.jar
+COPY jars/aws-java-sdk-bundle-1.11.375.jar /opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar
+
 # Download the Iceberg runtime jar using curl
 RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar
 

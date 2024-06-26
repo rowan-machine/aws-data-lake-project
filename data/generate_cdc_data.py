@@ -1,7 +1,7 @@
 import pandas as pd
 from utils import current_timestamp, generate_integer_id, fake
 
-# Load existing data
+# Load existing data from fixed file names
 df_customers = pd.read_csv('customers.csv')
 df_products = pd.read_csv('products.csv')
 df_orders = pd.read_csv('orders.csv')
@@ -56,7 +56,7 @@ cdc_orders = generate_cdc_data(df_orders, 'orders')
 # Get current timestamp for file naming
 timestamp = current_timestamp()
 
-# Save CDC DataFrames as CSV files
+# Save CDC DataFrames as CSV files with timestamped names
 cdc_customers.to_csv(f'customers_cdc_{timestamp}.csv', index=False)
 cdc_products.to_csv(f'products_cdc_{timestamp}.csv', index=False)
 cdc_orders.to_csv(f'orders_cdc_{timestamp}.csv', index=False)
