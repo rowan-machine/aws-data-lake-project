@@ -1,0 +1,7 @@
+# Create requirements.txt
+jupyter==1.0.0
+boto3==1.34.134
+pyspark==3.5.1
+pandas==1.5.0
+notebook==6.5.0
+pydeequ==1.0.5

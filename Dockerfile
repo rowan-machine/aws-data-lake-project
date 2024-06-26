@@ -14,7 +14,17 @@ RUN apt-get update \
 
 # Install python packages
 RUN pip3 install --upgrade pip wheel
-RUN pip3 install jupyter pydeequ boto3 pyspark pandas notebook
+
+# Create requirements.txt file with pinned versions
+COPY requirements.txt .
+
+# Clear pip cache to prevent mismatches
+RUN pip3 cache purge
+
+# Install packages from requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# RUN pip3 install jupyter boto3 pyspark pandas notebook pydeequ==1.0.5
 
 # Create directory for Glue libraries and jars
 RUN mkdir -p /opt/glue/jars /var/log/glue
@@ -26,9 +36,17 @@ COPY glue/scripts /opt/glue/scripts
 # Copy AWS Glue libraries
 COPY aws-glue-libs/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
 
-# Download the Iceberg runtime jar and additional JARs using wget
-RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar && \
-    wget -O /opt/glue/jars/hadoop-aws-3.2.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar && \
+# Copy PyDeequ JAR file
+COPY jars/deequ-1.0.5.jar /opt/glue/jars/deequ-1.0.5.jar
+
+# Install the Deequ JAR
+RUN pip install pydeequ
+
+#Copy Iceberg runtime jar
+COPY jars/iceberg-spark3-runtime-0.12.0.jar /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar
+
+# Download additional JARs using wget
+RUN wget -O /opt/glue/jars/hadoop-aws-3.2.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar && \
     wget -O /opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
 
 # Set environment variables to include the AWS Glue libraries

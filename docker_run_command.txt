@@ -1,3 +1,3 @@
 docker build -t local-glue-env .
 
-docker run -p 8888:8888 -v $(pwd)/logs:/var/log/glue local-glue-env
+docker-compose up
