@@ -29,6 +29,7 @@ Resources:
   AthenaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
+      RoleName: !Sub 'AWSGlueServiceRole-${Environment}'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
