@@ -1,36 +1,55 @@
 # Use the official Spark image with Python support
 FROM apache/spark-py:latest
 
-# Install necessary packages
+# Install required packages
 USER root
 RUN apt-get update \
-    && apt-get install -y python3-pip python3-setuptools unzip curl
+    && apt-get install -y \
+        python3-pip \
+        python3-setuptools \
+        && rm -rf /var/lib/apt/lists/*
+
+# Install python packages
 RUN pip3 install --upgrade pip wheel
-RUN pip3 install jupyter pydeequ boto3 pyspark
+RUN pip3 install jupyter awscli boto3 pyspark pandas notebook great_expectations
+
+# Create directory for Glue libraries and jars
+RUN mkdir -p /opt/glue/jars /var/log/glue
+
+# Copy necessary files
+COPY aws-glue-libs/ /opt/glue
+COPY glue/scripts /opt/glue/scripts
 
 # Copy AWS Glue libraries
-COPY aws-glue-libs/dist/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
+COPY aws-glue-libs/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
 
-# Create directory for jars
-RUN mkdir -p /opt/glue/jars
+# Copy JAR files
+COPY  jars/aws-java-sdk-bundle-1.11.375.jar /opt/glue/jars/
+COPY  jars/hadoop-aws-3.2.0.jar /opt/glue/jars/
+#COPY jars/iceberg-spark-3.1_2.12-1.3.1.jar /opt/glue/jars/
 
-# Download the Iceberg runtime jar using curl
-RUN wget -O /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark3-runtime/0.12.0/iceberg-spark3-runtime-0.12.0.jar
+# Download additional JARs using wget
+#RUN wget -O /opt/glue/jars/hadoop-aws-3.2.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar && \
+#    wget -O /opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
 
 # Set environment variables to include the AWS Glue libraries
+ENV SPARK_HOME=/opt/spark
+ENV PATH=$SPARK_HOME/bin:$PATH
+ENV SPARK_VERSION=3.1.3
+ENV HADOOP_VERSION=3.2.0
 ENV PYTHONPATH="$PYTHONPATH:/opt/glue/aws_glue_libs-4.0.0-py3.8.egg"
 
+# Copy the logging configuration file
+COPY logging.conf /opt/glue/logging.conf
+
 # Set the working directory
-WORKDIR /opt/glue
+WORKDIR /opt/glue/scripts
 
 # Expose port for Jupyter Notebook
 EXPOSE 8888
 
 # Generate Jupyter Notebook configuration file
 RUN jupyter notebook --generate-config
-
-# Install the Jupyter notebook package
-RUN pip3 install notebook
 
 # Set the Jupyter Notebook password
 RUN python3 -c "from jupyter_server.auth import passwd; print(passwd('1234'))" > /tmp/gen_passwd.txt && \
@@ -43,7 +62,7 @@ RUN python3 -c "from jupyter_server.auth import passwd; print(passwd('1234'))" >
 # Copy the script to the container
 COPY glue/scripts/ /opt/glue/scripts/
 
-# Copy Iceberg and PyDeequ JAR files
+# Copy JAR files
 COPY jars/ /opt/glue/jars/
 
 # Run Jupyter Notebook

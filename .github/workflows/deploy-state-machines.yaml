@@ -1,0 +1,42 @@
+name: Deploy State Machine
+
+on:
+  push:
+    branches:
+      - main
+      #- DEV
+    paths:
+      - 'cloudformation/state-machines.yaml'
+      - '.github/workflows/deploy-state-machines.yaml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set Environment Variable
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file cloudformation/state-machine.yaml \
+            --stack-name ${{ env.ENVIRONMENT }}-state-machine-stack \
+            --capabilities CAPABILITY_IAM \
+            --parameter-overrides Environment=${{ env.ENVIRONMENT }}

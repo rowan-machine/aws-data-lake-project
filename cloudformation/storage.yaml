@@ -37,7 +37,20 @@ Resources:
             Status: Enabled
             ExpirationInDays: 365
 
-  DataLakeProjectRepoBucket:
+  DataLakeBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'ecommerce-data-lake-${AWS::AccountId}-us-east-1-${Environment}'
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireFiles
+            Status: Enabled
+            ExpirationInDays: 365
+
+DataLakeProjectRepoBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub 'aws-data-lake-project-repo-${Environment}'
@@ -62,9 +75,3 @@ Resources:
           - Id: ExpireQueryResults
             Status: Enabled
             ExpirationInDays: 30
-
-  GlueJobLogGroup:
-    Type: 'AWS::Logs::LogGroup'
-    Properties:
-      LogGroupName: !Sub '/aws-glue/jobs/logs-v2-${Environment}'
-      RetentionInDays: 30
