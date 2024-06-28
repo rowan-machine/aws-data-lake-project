@@ -30,7 +30,7 @@ Parameters:
     Description: S3 bucket where the Glue job scripts are stored
     Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/'
 
-  GlueJobScriptS3Key:
+  MasterDataProcessingJobGlueJobScriptS3Key:
     Type: String
     Description: S3 key of the main Glue job script
     Default: 'etl/MasterDataProcessingJob/main_script.py'
@@ -144,7 +144,7 @@ Resources:
       Role: !GetAtt GlueServiceRole.Arn
       Command:
         Name: glueetl
-        ScriptLocation: !Ref GlueScriptLocation
+        ScriptLocation: !Sub '${GlueJobScriptS3Bucket}${MasterDataProcessingJobGlueJobScriptS3Key}''
         PythonVersion: '3'
       DefaultArguments:
         --job-bookmark-option: job-bookmark-enable
