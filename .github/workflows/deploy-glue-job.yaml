@@ -40,3 +40,4 @@ jobs:
             --template-file cloudformation/data-processing.yaml \
             --stack-name ${{ env.ENVIRONMENT }}-data-processing-stack \
             --capabilities CAPABILITY_NAMED_IAM
+            --parameter-overrides Environment=${{ env.ENVIRONMENT }}
