@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: CloudFormation template to create S3 buckets and CloudWatch log group for AWS Glue with environment separation 
+Description: CloudFormation template to create S3 buckets and CloudWatch log group for AWS Glue with environment separation
 
 Parameters:
   Environment:
@@ -50,7 +50,7 @@ Resources:
             Status: Enabled
             ExpirationInDays: 365
 
-DataLakeProjectRepoBucket:
+  DataLakeProjectRepoBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub 'aws-data-lake-project-repo-${Environment}'
@@ -63,7 +63,7 @@ DataLakeProjectRepoBucket:
             Status: Enabled
             ExpirationInDays: 365
 
-AthenaQueryResultsBucket:
+  AthenaQueryResultsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub 'athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'
@@ -72,6 +72,6 @@ AthenaQueryResultsBucket:
         Status: Enabled
       LifecycleConfiguration:
         Rules:
-          - Id: ExpireQueryResults
+          - Id: ExpireResults
             Status: Enabled
-            ExpirationInDays: 30
+            ExpirationInDays: 365
