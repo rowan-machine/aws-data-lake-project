@@ -13,17 +13,7 @@ Parameters:
   DataLakeBucket:
     Type: String
     Description: The name of the S3 bucket for the data lake
-    Default: !Sub 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
-
-  MasterS3Path:
-    Type: String
-    Description: S3 path to the master data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/04_master/'
-    
-  CuratedS3Path:
-    Type: String
-    Description: S3 path to the curated data
-    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-dev/06_curated/'
+    Default: 'ecommerce-data-lake-730335322582-us-east-1' 
 
 Resources:
   AthenaExecutionRole:
@@ -93,7 +83,7 @@ Resources:
               Type: timestamp
             - Name: ingestion_date
               Type: timestamp
-          Location: !Sub '${CuratedS3Path}/orders/'
+          Location: !Sub '${DataLakeBucket}-${Environment}/06_curated/orders/'
           InputFormat: 'org.apache.hadoop.mapred.TextInputFormat'
           OutputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
           Compressed: false
@@ -128,7 +118,7 @@ Resources:
               Type: timestamp
             - Name: ingestion_date
               Type: timestamp
-          Location: !Sub '${CuratedS3Path}/customers/'
+          Location: !Sub '${DataLakeBucket}-${Environment}/06_curated/customers/'
           InputFormat: 'org.apache.hadoop.mapred.TextInputFormat'
           OutputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
           Compressed: false
@@ -161,7 +151,7 @@ Resources:
               Type: timestamp
             - Name: ingestion_date
               Type: timestamp
-          Location: !Sub '${CuratedS3Path}/products/'
+          Location: !Sub '${DataLakeBucket}-${Environment}/06_curated/products/'
           InputFormat: 'org.apache.hadoop.mapred.TextInputFormat'
           OutputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
           Compressed: false
