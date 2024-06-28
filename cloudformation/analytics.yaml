@@ -9,11 +9,6 @@ Parameters:
       - dev
       - prod
     Default: dev
-  
-  GlueDatabaseName:
-    Type: String
-    Description: The name of the Glue database
-    Default: 'ecommerce_db_${Environment}'
 
   DataLakeBucket:
     Type: String
@@ -78,7 +73,7 @@ Resources:
     Type: 'AWS::Glue::Table'
     Properties:
       CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Ref GlueDatabaseName
+      DatabaseName: !Sub 'ecommerce_db_${Environment}'
       TableInput:
         Name: orders
         StorageDescriptor:
@@ -113,7 +108,7 @@ Resources:
     Type: 'AWS::Glue::Table'
     Properties:
       CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Ref GlueDatabaseName
+      DatabaseName: !Sub 'ecommerce_db_${Environment}'
       TableInput:
         Name: customers
         StorageDescriptor:
@@ -148,7 +143,7 @@ Resources:
     Type: 'AWS::Glue::Table'
     Properties:
       CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Ref GlueDatabaseName
+      DatabaseName: !Sub 'ecommerce_db_${Environment}'
       TableInput:
         Name: products
         StorageDescriptor:
