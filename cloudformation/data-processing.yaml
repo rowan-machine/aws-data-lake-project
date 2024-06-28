@@ -15,25 +15,10 @@ Parameters:
     Description: The name of the Glue database
     Default: 'ecommerce_db_${Environment}'
 
-  DataLakeBucket:
-    Type: String
-    Description: The name of the S3 bucket for the data lake
-    Default: 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
-
   MasterDataProcessingGlueJobName:
     Description: The name of the Glue job
     Type: String
     Default: '${Environment}-MasterDataProcessingGlueJob'
-
-  GlueJobScriptS3Bucket:
-    Type: String
-    Description: S3 bucket where the Glue job scripts are stored
-    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/'
-
-  MasterDataProcessingJobGlueJobScriptS3Key:
-    Type: String
-    Description: S3 key of the main Glue job script
-    Default: 'etl/MasterDataProcessingJob/main_script.py'
 
   GlueIAMRoleName:
     Description: The name of the IAM role for the Glue job
@@ -144,7 +129,7 @@ Resources:
       Role: !GetAtt GlueServiceRole.Arn
       Command:
         Name: glueetl
-        ScriptLocation: !Sub 's3://${GlueJobScriptS3Bucket}${MasterDataProcessingJobGlueJobScriptS3Key}'
+        ScriptLocation: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/etl/MasterDataProcessingJob/main_script.py'
         PythonVersion: '3'
       DefaultArguments:
         --job-bookmark-option: job-bookmark-enable
