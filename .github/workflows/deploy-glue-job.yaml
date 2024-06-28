@@ -33,11 +33,3 @@ jobs:
       - name: Sync Glue script to S3
         run: |
           aws s3 cp glue/scripts/ s3://aws-glue-assets-730335322582-us-east-1-${{ env.ENVIRONMENT }}/scripts/ --recursive
-
-      - name: Deploy CloudFormation stack
-        run: |
-          aws cloudformation deploy \
-            --template-file cloudformation/data-processing.yaml \
-            --stack-name ${{ env.ENVIRONMENT }}-data-processing-stack \
-            --capabilities CAPABILITY_NAMED_IAM
-            --parameter-overrides Environment=${{ env.ENVIRONMENT }}
