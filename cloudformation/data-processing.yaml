@@ -144,7 +144,7 @@ Resources:
       Role: !GetAtt GlueServiceRole.Arn
       Command:
         Name: glueetl
-        ScriptLocation: !Sub '${GlueJobScriptS3Bucket}${MasterDataProcessingJobGlueJobScriptS3Key}''
+        ScriptLocation: !Sub !Sub 's3://${ScriptsBucket}${MasterDataProcessingJobGlueJobScriptS3Key}'
         PythonVersion: '3'
       DefaultArguments:
         --job-bookmark-option: job-bookmark-enable
