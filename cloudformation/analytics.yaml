@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Analytics stack for AWS Data Lake project with environment separation
+Description: Analytics stack for AWS Data Lake project with environment separation 
 
 Parameters:
   Environment:
