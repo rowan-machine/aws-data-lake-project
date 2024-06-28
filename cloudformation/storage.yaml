@@ -50,7 +50,7 @@ Resources:
             Status: Enabled
             ExpirationInDays: 365
 
-DataLakeProjectRepoBucket:
+  DataLakeProjectRepoBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub 'aws-data-lake-project-repo-${Environment}'
@@ -72,6 +72,6 @@ DataLakeProjectRepoBucket:
         Status: Enabled
       LifecycleConfiguration:
         Rules:
-          - Id: ExpireQueryResults
+          - Id: ExpireResults
             Status: Enabled
-            ExpirationInDays: 30
+            ExpirationInDays: 365
