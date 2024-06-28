@@ -1,4 +1,4 @@
-name: Deploy Analytics Stack 
+name: Deploy Analytics Stack
 
 on:
   push:

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Analytics stack for AWS Data Lake project with environment separation
+Description: Analytics stack for AWS Data Lake project with environment separation 
 
 Parameters:
   Environment:
@@ -9,11 +9,6 @@ Parameters:
       - dev
       - prod
     Default: dev
-
-  CuratedS3Path:
-    Type: String
-    Description: S3 path to the curated data
-    Default: 's3://ecommerce-data-lake-730335322582-us-east-1/06_curated'
 
 Resources:
   AthenaExecutionRole:
@@ -63,7 +58,7 @@ Resources:
     Type: 'AWS::Glue::Table'
     Properties:
       CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Sub "ecommerce_db_${Environment}"
+      DatabaseName: !Sub 'ecommerce_db_${Environment}'
       TableInput:
         Name: orders
         StorageDescriptor:
@@ -82,7 +77,7 @@ Resources:
               Type: timestamp
             - Name: ingestion_date
               Type: timestamp
-          Location: !Sub '${CuratedS3Path}/orders/'
+          Location: !Sub 's3://ecommerce-data-lake-730335322582-us-east-1-${Environment}/orders/'
           InputFormat: 'org.apache.hadoop.mapred.TextInputFormat'
           OutputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
           Compressed: false
@@ -98,7 +93,7 @@ Resources:
     Type: 'AWS::Glue::Table'
     Properties:
       CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Sub "ecommerce_db_${Environment}"
+      DatabaseName: !Sub 'ecommerce_db_${Environment}'
       TableInput:
         Name: customers
         StorageDescriptor:
@@ -117,7 +112,7 @@ Resources:
               Type: timestamp
             - Name: ingestion_date
               Type: timestamp
-          Location: !Sub '${CuratedS3Path}/customers/'
+          Location: !Sub 's3://ecommerce-data-lake-730335322582-us-east-1-${Environment}/customers/'
           InputFormat: 'org.apache.hadoop.mapred.TextInputFormat'
           OutputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
           Compressed: false
@@ -133,7 +128,7 @@ Resources:
     Type: 'AWS::Glue::Table'
     Properties:
       CatalogId: !Ref AWS::AccountId
-      DatabaseName: !Sub "ecommerce_db_${Environment}"
+      DatabaseName: !Sub 'ecommerce_db_${Environment}'
       TableInput:
         Name: products
         StorageDescriptor:
@@ -150,7 +145,7 @@ Resources:
               Type: timestamp
             - Name: ingestion_date
               Type: timestamp
-          Location: !Sub '${CuratedS3Path}/products/'
+          Location: !Sub 's3://ecommerce-data-lake-730335322582-us-east-1-${Environment}/products/'
           InputFormat: 'org.apache.hadoop.mapred.TextInputFormat'
           OutputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
           Compressed: false
