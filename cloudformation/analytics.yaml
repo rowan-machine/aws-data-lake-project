@@ -13,22 +13,23 @@ Parameters:
   DataLakeBucket:
     Type: String
     Description: The name of the S3 bucket for the data lake
-    Default: 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
+    Default: !Sub 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
 
   MasterS3Path:
     Type: String
     Description: S3 path to the master data
-    Default: 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/04_master/'
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-${Environment}/04_master/'
     
   CuratedS3Path:
     Type: String
     Description: S3 path to the curated data
-    Default: 's3://ecommerce-data-lake-${AWS::Region}-dev/06_curated/'
+    Default: !Sub 's3://ecommerce-data-lake-${AWS::Region}-dev/06_curated/'
 
 Resources:
   AthenaExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
+      RoleName: !Sub 'AthenaExecutionRole-${Environment}'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
