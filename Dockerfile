@@ -7,22 +7,11 @@ RUN apt-get update \
     && apt-get install -y \
         python3-pip \
         python3-setuptools \
-        curl \
-        wget \
-        unzip \ 
         && rm -rf /var/lib/apt/lists/*
 
 # Install python packages
 RUN pip3 install --upgrade pip wheel
-
-# Create requirements.txt file with pinned versions
-COPY requirements.txt .
-
-# Clear pip cache to prevent mismatches
-RUN pip3 cache purge
-
-# Install packages from requirements.txt
-RUN pip3 install --no-cache-dir --no-cache -r requirements.txt
+RUN pip3 install jupyter awscli boto3 pyspark pandas notebook great_expectations
 
 # Create directory for Glue libraries and jars
 RUN mkdir -p /opt/glue/jars /var/log/glue
@@ -34,22 +23,20 @@ COPY glue/scripts /opt/glue/scripts
 # Copy AWS Glue libraries
 COPY aws-glue-libs/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
 
-# Copy PyDeequ JAR file
-COPY jars/deequ-1.0.5.jar /opt/glue/jars/deequ-1.0.5.jar
-
-# Install the Deequ JAR
-RUN pip install pydeequ
-
-#Copy Iceberg runtime jar
-COPY jars/iceberg-spark3-runtime-0.12.0.jar /opt/glue/jars/iceberg-spark3-runtime-0.12.0.jar
+# Copy JAR files
+COPY  jars/aws-java-sdk-bundle-1.11.375.jar /opt/glue/jars/
+COPY  jars/hadoop-aws-3.2.0.jar /opt/glue/jars/
+#COPY jars/iceberg-spark-3.1_2.12-1.3.1.jar /opt/glue/jars/
 
 # Download additional JARs using wget
-RUN wget -O /opt/glue/jars/hadoop-aws-3.2.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar && \
-    wget -O /opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
+#RUN wget -O /opt/glue/jars/hadoop-aws-3.2.0.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.2.0/hadoop-aws-3.2.0.jar && \
+#    wget -O /opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.11.375/aws-java-sdk-bundle-1.11.375.jar
 
 # Set environment variables to include the AWS Glue libraries
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$PATH
+ENV SPARK_VERSION=3.1.3
+ENV HADOOP_VERSION=3.2.0
 ENV PYTHONPATH="$PYTHONPATH:/opt/glue/aws_glue_libs-4.0.0-py3.8.egg"
 
 # Copy the logging configuration file

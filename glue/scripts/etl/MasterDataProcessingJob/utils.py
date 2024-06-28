@@ -1,7 +1,6 @@
 import boto3
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import current_date
-from pydeequ.verification import VerificationSuite, VerificationResult
 import json
 import logging
 from datetime import datetime
@@ -10,22 +9,18 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def get_spark_session(app_name: str, iceberg_jar_path: str, pydeequ_jar_path: str, hadoopaws_jar_path: str, awssdk_jar_path: str, warehouse_path: str) -> SparkSession:
+def get_spark_session(hadoopaws_jar_path: str, awssdk_jar_path: str) -> SparkSession:
     """
-    Initialize and return a Spark session with Iceberg and PyDeequ configurations.
+    Initialize and return a Spark session.
     """
     try:
         spark = SparkSession.builder \
-            .appName(app_name) \
-            .config("spark.jars", f"{iceberg_jar_path},{pydeequ_jar_path},{hadoopaws_jar_path},{awssdk_jar_path}") \
-            .config("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions") \
-            .config("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog") \
-            .config("spark.sql.catalog.spark_catalog.type", "hive") \
-            .config("spark.sql.catalog.master_catalog", "org.apache.iceberg.spark.SparkCatalog") \
-            .config("spark.sql.catalog.master_catalog.type", "hadoop") \
-            .config("spark.sql.catalog.master_catalog.warehouse", warehouse_path) \
+            .config("spark.jars", f"{hadoopaws_jar_path},{awssdk_jar_path}") \
+            .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem") \
+            .config("spark.hadoop.fs.s3a.aws.credentials.provider", "com.amazonaws.auth.DefaultAWSCredentialsProviderChain") \
+            .config("spark.driver.extraJavaOptions", "--add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED") \
             .getOrCreate()
-        logger.info(f"Spark session '{app_name}' created successfully.")
+        logger.info(f"Spark session created successfully.")
         return spark
     except Exception as e:
         logger.error(f"Failed to create Spark session: {e}")

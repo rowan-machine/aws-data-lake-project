@@ -1,3 +1,5 @@
 docker build -t local-glue-env .
 
 docker-compose up
+
+
