@@ -1,57 +1,20 @@
-import boto3
 import pandas as pd
-from faker import Faker
 import random
-
-# Initialize Faker
-fake = Faker()
+from utils import generate_customers, generate_products, generate_orders, current_timestamp
+from config import NUM_RECORDS
 
 # Generate synthetic data
-def generate_data(num_records):
-    orders = []
-    customers = []
-    products = []
+df_customers = generate_customers(NUM_RECORDS)
+df_products = generate_products(NUM_RECORDS)
+df_orders = generate_orders(NUM_RECORDS, df_customers['customer_id'].tolist(), df_products['product_id'].tolist())
 
-    for _ in range(num_records):
-        customer_id = fake.uuid4()
-        product_id = fake.uuid4()
+# Save DataFrames as CSV files with consistent names for CDC generation
+df_customers.to_csv('customers.csv', index=False)
+df_products.to_csv('products.csv', index=False)
+df_orders.to_csv('orders.csv', index=False)
 
-        customers.append({
-            'customer_id': customer_id,
-            'name': fake.name(),
-            'email': fake.email(),
-            'address': fake.address(),
-            'signup_date': fake.date_this_decade()
-        })
-
-        products.append({
-            'product_id': product_id,
-            'name': fake.word(),
-            'category': fake.word(),
-            'price': round(random.uniform(10.0, 100.0), 2),
-            'stock_quantity': random.randint(1, 100)
-        })
-
-        orders.append({
-            'order_id': fake.uuid4(),
-            'customer_id': customer_id,
-            'product_id': product_id,
-            'quantity': random.randint(1, 5),
-            'price': round(random.uniform(10.0, 100.0), 2),
-            'order_date': fake.date_this_year()
-        })
-
-    return customers, products, orders
-
-# Generate 1000 records
-customers, products, orders = generate_data(1000)
-
-# Convert to DataFrame
-df_customers = pd.DataFrame(customers)
-df_products = pd.DataFrame(products)
-df_orders = pd.DataFrame(orders)
-
-# Save DataFrames as CSV files
-df_customers.to_csv('customers_20240619.csv', index=False)
-df_products.to_csv('products_20240619.csv', index=False)
-df_orders.to_csv('orders_20240619.csv', index=False)
+# Also save with timestamped names for uploading
+timestamp = current_timestamp()
+df_customers.to_csv(f'customers_{timestamp}.csv', index=False)
+df_products.to_csv(f'products_{timestamp}.csv', index=False)
+df_orders.to_csv(f'orders_{timestamp}.csv', index=False)

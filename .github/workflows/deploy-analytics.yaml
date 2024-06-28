@@ -66,4 +66,7 @@ jobs:
 
       - name: Deploy Analytics Stack
         run: |
-          aws cloudformation deploy --template-file cloudformation/analytics.yaml --stack-name ${{ env.ENVIRONMENT }}-analytics-stack --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Environment=${{ env.ENVIRONMENT }}
+          aws cloudformation deploy --template-file cloudformation/analytics.yaml \
+            --stack-name ${{ env.ENVIRONMENT }}-analytics-stack \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides Environment=${{ env.ENVIRONMENT }}

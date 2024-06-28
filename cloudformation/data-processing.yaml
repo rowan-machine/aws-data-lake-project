@@ -20,15 +20,20 @@ Parameters:
     Description: The name of the S3 bucket for the data lake
     Default: 'ecommerce-data-lake-${AWS::Region}-${Environment}' 
 
-  GlueJobName:
+  MasterDataProcessingGlueJobName:
     Description: The name of the Glue job
     Type: String
-    Default: FullLoadAndCDCProcesserJob
+    Default: '${Environment}-MasterDataProcessingGlueJob'
 
-  GlueScriptLocation:
-    Description: The S3 location of the Glue script
+  GlueJobScriptS3Bucket:
     Type: String
-    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/FullLoadAndCDCProcesser.py'
+    Description: S3 bucket where the Glue job scripts are stored
+    Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/scripts/'
+
+  GlueJobScriptS3Key:
+    Type: String
+    Description: S3 key of the main Glue job script
+    Default: 'etl/MasterDataProcessingJob/main_script.py'
 
   GlueIAMRoleName:
     Description: The name of the IAM role for the Glue job
@@ -71,82 +76,58 @@ Parameters:
     Default: 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/dependencies/deequ-glue-1.0-SNAPSHOT-jar-with-dependencies.jar'  
 
 Resources:
-  GlueJobRole:
+  GlueServiceRole:
     Type: 'AWS::IAM::Role'
     Properties:
-      RoleName: !Ref GlueIAMRoleName
+      RoleName: !Sub 'AWSGlueServiceRole-${Environment}'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: 'Allow'
+          - Effect: Allow
             Principal:
-              Service: 'glue.amazonaws.com'
+              Service: glue.amazonaws.com
             Action: 'sts:AssumeRole'
       Policies:
-        - PolicyName: GlueJobS3Access
+        - PolicyName: GlueServicePolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              - Effect: 'Allow'
+              - Effect: Allow
                 Action:
-                  - 's3:GetObject'
                   - 's3:ListBucket'
+                  - 's3:GetObject'
                   - 's3:PutObject'
                   - 's3:DeleteObject'
-                Resource:
-                  - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}'
-                  - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}/*'
-                  - !Sub 'arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}'
-                  - !Sub 'arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/*'
-              - Effect: 'Allow'
-                Action:
-                  - 'glue:*'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  - 'cloudwatch:PutMetricData'
+                  - 'cloudwatch:GetMetricData'
                 Resource: '*'
-                
-  GlueS3AccessPolicy:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+
+  GlueJobExecutionPolicy:
     Type: 'AWS::IAM::Policy'
     Properties:
-      PolicyName: 'GlueS3AccessPolicy'
+      PolicyName: !Sub 'GlueJobExecutionPolicy-${Environment}'
+      Roles: 
+        - !Ref GlueServiceRole
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: 'Allow'
+          - Effect: Allow
             Action:
-              - 'glue:*'
-            Resource: '*'
-          - Effect: 'Allow'
-            Action:
-              - 's3:GetObject'
               - 's3:ListBucket'
-            Resource:
-              - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}'
-              - !Sub 'arn:aws:s3:::ecommerce-data-lake-${AWS::Region}-${Environment}/*'
-          - Effect: 'Allow'
-            Action:
-              - 'glue:GetDatabase'
-              - 'glue:GetTable'
-              - 'glue:GetTables'
-              - 'glue:CreateTable'
-              - 'glue:UpdateTable'
-              - 'glue:GetCatalog'
-            Resource: 
-              - 'arn:aws:glue:us-east-1:730335322582:catalog'
-              - !Sub 'arn:aws:glue:us-east-1:730335322582:database/ecommerce_db_${Environment}'
-              - 'arn:aws:glue:us-east-1:730335322582:table/*'
-      Roles:
-        - !Ref GlueS3AccessRole
-
-  GlueS3AccessRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Principal:
-              Service: 'glue.amazonaws.com'
-            Action: 'sts:AssumeRole'
-      Path: "/"
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:DeleteObject'
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+              - 'cloudwatch:PutMetricData'
+              - 'cloudwatch:GetMetricData'
+            Resource: '*'
 
   GlueDatabase:
     Type: 'AWS::Glue::Database'
@@ -159,27 +140,35 @@ Resources:
   GlueJob:
     Type: 'AWS::Glue::Job'
     Properties:
-      Name: !Sub '${GlueJobName}-${Environment}'
-      Role: !GetAtt GlueJobRole.Arn
+      Name: !Sub '${Environment}-FullLoadAndCDCProcessingJob'
+      Role: !GetAtt GlueServiceRole.Arn
       Command:
         Name: glueetl
         ScriptLocation: !Ref GlueScriptLocation
         PythonVersion: '3'
       DefaultArguments:
-        "--RAW_S3_PATH": !Ref RawS3Path
-        "--STAGING_S3_PATH": !Ref StagingS3Path
-        "--PREPROCESSED_S3_PATH": !Ref PreprocessedS3Path
-        "--MASTER_S3_PATH": !Ref MasterS3Path
-        "--CURATED_S3_PATH": !Ref CuratedS3Path
-        "--enable-continuous-cloudwatch-log": "true"
-        "--enable-continuous-log-filter": "true"
-        "--enable-metrics": "true"
-        '--additional-python-modules': 'pydeequ'
-        '--extra-jars': !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
-        '--TempDir': !Sub 's3://temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
-        '--SPARK_VERSION': '3.1' #Set the SPARK_VERSION environment variable
+        --job-bookmark-option: job-bookmark-enable
+        --RAW_S3_PATH: !Ref RawS3Path
+        --STAGING_S3_PATH: !Ref StagingS3Path
+        --PREPROCESSED_S3_PATH: !Ref PreprocessedS3Path
+        --MASTER_S3_PATH: !Ref MasterS3Path
+        --CURATED_S3_PATH: !Ref CuratedS3Path
+        --enable-continuous-cloudwatch-log: "true"
+        --enable-continuous-log-filter: "true"
+        --enable-metrics: "true"
+        --spark-event-logs-path: !Sub 's3://aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}/spark-logs/'
+        --additional-python-modules: 'pydeequ'
+        --extra-jars: !Sub "${IcebergJarS3Path},${PyDeequJarS3Path}"
+        --TempDir: !Sub 's3://temp-${AWS::AccountId}-${AWS::Region}-${Environment}'
+        --SPARK_VERSION: '3.1' #Set the SPARK_VERSION environment variable
       GlueVersion: '3.0'
       MaxRetries: 1
-      LogUri: !Sub "s3://${AWS::AccountId}/aws-glue/jobs/logs-v2/"
+      LogUri: !Sub "s3://${AWS::AccountId}/aws-glue/jobs/logs-v2-${Environment}/"
       MaxCapacity: 2.0
-      Timeout: 2880
+      Timeout: 2880 # 48 hours
+
+  GlueJobLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws-glue/jobs/logs-v2-${Environment}'
+      RetentionInDays: 30

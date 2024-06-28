@@ -1,17 +1,14 @@
 import boto3
+from utils import current_timestamp, upload_to_s3
+from config import BUCKET
 
 # Initialize S3 client
 s3 = boto3.client('s3')
 
-# Define bucket names
-dev_bucket = 'ecommerce-data-lake-us-east-1-dev'
-prod_bucket = 'ecommerce-data-lake-us-east-1-prod'
+# Get current timestamp for file naming
+timestamp = current_timestamp()
 
-# Upload files to S3
-def upload_to_s3(bucket, file_name, object_name):
-    s3.upload_file(file_name, bucket, object_name)
-
-# Upload CSV files to dev bucket
-upload_to_s3(dev_bucket, 'customers_20240619.csv', '01_raw/netsuite/customers/full_load/ingestion_date=2024-06-19/customers_20240619.csv')
-upload_to_s3(dev_bucket, 'products_20240619.csv', '01_raw/netsuite/products/full_load/ingestion_date=2024-06-19/products_20240619.csv')
-upload_to_s3(dev_bucket, 'orders_20240619.csv', '01_raw/netsuite/orders/full_load/ingestion_date=2024-06-19/orders_20240619.csv')
+# Upload CSV files to the configured bucket
+upload_to_s3(s3, BUCKET, f'customers_{timestamp}.csv', f'01_raw/netsuite/customers/full_load/ingestion_date={timestamp}/customers_{timestamp}.csv')
+upload_to_s3(s3, BUCKET, f'products_{timestamp}.csv', f'01_raw/netsuite/products/full_load/ingestion_date={timestamp}/products_{timestamp}.csv')
+upload_to_s3(s3, BUCKET, f'orders_{timestamp}.csv', f'01_raw/netsuite/orders/full_load/ingestion_date={timestamp}/orders_{timestamp}.csv')
