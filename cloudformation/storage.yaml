@@ -63,7 +63,7 @@ DataLakeProjectRepoBucket:
             Status: Enabled
             ExpirationInDays: 365
 
-  AthenaQueryResultsBucket:
+AthenaQueryResultsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub 'athena-query-results-${AWS::AccountId}-${AWS::Region}-${Environment}'
