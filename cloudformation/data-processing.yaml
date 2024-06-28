@@ -140,11 +140,11 @@ Resources:
   GlueJob:
     Type: 'AWS::Glue::Job'
     Properties:
-      Name: !Sub '${Environment}-FullLoadAndCDCProcessingJob'
+      Name: !Sub '${Environment}-MasterDataProcessingJob'
       Role: !GetAtt GlueServiceRole.Arn
       Command:
         Name: glueetl
-        ScriptLocation: !Sub 's3://${ScriptsBucket}${MasterDataProcessingJobGlueJobScriptS3Key}'
+        ScriptLocation: !Sub 's3://${GlueJobScriptS3Bucket}${MasterDataProcessingJobGlueJobScriptS3Key}'
         PythonVersion: '3'
       DefaultArguments:
         --job-bookmark-option: job-bookmark-enable
