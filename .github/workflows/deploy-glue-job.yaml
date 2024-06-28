@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - DEV
+    paths:
+      - 'glue/scripts/'
+      - '.github/workflows/deploy-glue-job.yaml'
 
 jobs:
   deploy:
