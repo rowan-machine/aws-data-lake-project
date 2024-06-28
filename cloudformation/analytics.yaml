@@ -77,6 +77,7 @@ Resources:
   OrdersTable:
     Type: 'AWS::Glue::Table'
     Properties:
+      CatalogId: !Ref AWS::AccountId
       DatabaseName: !Ref GlueDatabaseName
       TableInput:
         Name: orders
@@ -111,6 +112,7 @@ Resources:
   CustomersTable:
     Type: 'AWS::Glue::Table'
     Properties:
+      CatalogId: !Ref AWS::AccountId
       DatabaseName: !Ref GlueDatabaseName
       TableInput:
         Name: customers
@@ -145,6 +147,7 @@ Resources:
   ProductsTable:
     Type: 'AWS::Glue::Table'
     Properties:
+      CatalogId: !Ref AWS::AccountId
       DatabaseName: !Ref GlueDatabaseName
       TableInput:
         Name: products
