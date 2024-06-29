@@ -1,25 +1,41 @@
-import logging
 from pyspark.sql import SparkSession
+import os
+import utils
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+config = utils.load_config('config.json')
 
-def stage_data(spark: SparkSession, raw_s3_path: str, staging_s3_path: str, table_name: str):
-    logger.info(f"Staging data for table: {table_name}")
-    try:
-        # Read raw data
-        raw_data = spark.read.format("csv").option("header", "true").load(f"{raw_s3_path}{table_name}/")
-        logger.info("Raw data read successfully")
+def stage_data(spark, raw_s3_path, staging_s3_path, source, table_name, process_type, partition_columns):
+    """
+    Stage data by reading from the raw layer and writing to the staging layer in Parquet format with partitions.
+    """
+    raw_data_path = os.path.join(raw_s3_path, source, table_name, process_type)
+    staging_data_path = os.path.join(staging_s3_path, source, table_name, process_type)
+    print(f"Raw data path {raw_data_path}.")
+    print(f"Staging data path {staging_data_path}.")
+    
+    df = spark.read.csv(raw_data_path, header=True, inferSchema=True)
 
-        # Write to staging area
-        raw_data.write.mode("overwrite").parquet(f"{staging_s3_path}{table_name}/")
-        logger.info("Data written to staging area successfully")
-    except Exception as e:
-        logger.error(f"Error staging data for table {table_name}: {e}")
-        raise
+    partition_cols = config["tables"][table_name].get("partition_columns", [])
+    date_column = config["tables"][table_name].get("date_column", None)
+    
+    if date_column:
+        df = df.withColumn('year', year(df[date_column])) \
+               .withColumn('month', month(df[date_column]))
+    
+    df.write.partitionBy(partition_cols).parquet(staging_data_path, mode="overwrite")
+    print(f"Data staged from {raw_data_path} to {staging_data_path}.")
 
 if __name__ == "__main__":
-    # Example usage (this would be in your main script or test script)
-    spark = SparkSession.builder.appName("Staging").getOrCreate()
-    stage_data(spark, "s3a://raw-data/", "s3a://staging-data/", "orders")
+    # These paths should come from your configuration or environment variables
+    hadoop_aws_jar = "/opt/glue/jars/hadoop-aws-3.2.0.jar"
+    aws_sdk_jar = "/opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar"
+    raw_s3_path = "s3a://ecommerce-data-lake-730335322582-us-east-1-dev/01_raw/"
+    staging_s3_path = "s3a://ecommerce-data-lake-730335322582-us-east-1-dev/02_staging/"
+    source = "netsuite"
+    table_name = "orders"
+    process_type = "full_load"
+    partition_columns = ["year", "month"]
+
+    spark = utils.get_spark_session(hadoop_aws_jar, aws_sdk_jar)
+    config = utils.load_config()
+    stage_data(spark, raw_s3_path, staging_s3_path, source, table_name, process_type, config)
