@@ -13,6 +13,9 @@ RUN yum update -y && \
 RUN pip3 install --upgrade pip wheel
 RUN pip3 install jupyter awscli boto3 pyspark pandas notebook great_expectations
 
+# Ensure PATH includes Python and Pip
+ENV PATH="/usr/local/bin:${PATH}"
+
 # Create directory for Glue libraries and jars
 RUN mkdir -p /opt/glue/jars /var/log/glue
 
@@ -54,6 +57,9 @@ COPY glue/scripts/ /opt/glue/scripts/
 
 # Copy JAR files
 COPY jars/ /opt/glue/jars/
+
+# Ensure Jupyter script has the correct shebang
+RUN sed -i '1i#!/usr/bin/env python3' /usr/local/bin/jupyter
 
 # Run Jupyter Notebook
 CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser"]
