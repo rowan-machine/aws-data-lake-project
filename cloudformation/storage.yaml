@@ -75,3 +75,16 @@ Resources:
           - Id: ExpireResults
             Status: Enabled
             ExpirationInDays: 365
+
+  LambdaAssetsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub "aws-lambda-assets-${AWS::AccountId}-${AWS::Region}-${Environment}"
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireRepo
+            Status: Enabled
+            ExpirationInDays: 365

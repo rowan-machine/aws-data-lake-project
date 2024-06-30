@@ -12,13 +12,14 @@ def main():
     logger.info("Starting the main function")
 
     # Parameters
-    config = utils.load_config('config.yaml')
+    config = utils.load_config('config.json')
     raw_s3_path = config['paths']['raw_s3_path']
     staging_s3_path = config['paths']['staging_s3_path']
     preprocessed_s3_path = config['paths']['preprocessed_s3_path']
     master_s3_path = config['paths']['master_s3_path']
-    table_name = config['table_name']
-    process_type = config['process_type']
+    source = config['common']['source']
+    table_name = config['common']['table_name']
+    process_type = config['common']['process_type']
 
     # Paths to JAR files
     hadoop_aws_jar_path = config['jars']['hadoop_aws']
@@ -36,7 +37,7 @@ def main():
     # Stage data
     try:
         logger.info("Starting data staging")
-        staging.stage_data(spark, raw_s3_path, staging_s3_path, table_name)
+        staging.stage_data(spark, raw_s3_path, staging_s3_path, source, table_name, process_type)
         logger.info("Data staging completed successfully")
     except Exception as e:
         logger.error(f"Error in staging data: {e}")

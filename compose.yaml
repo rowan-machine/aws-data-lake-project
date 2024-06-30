@@ -1,12 +1,14 @@
+version: '3.8'
+
 services:
   glue:
-    image: local-glue-env
+    build: .
     ports:
       - "8888:8888"
-    volumes:
-      - ./notebooks/development:/opt/glue/notebooks/development
-      - ./glue/scripts:/opt/glue/scripts
     environment:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - SPARK_VERSION=3.5.1
+      - AWS_REGION=${AWS_REGION}
+    volumes:
+      - .:/opt
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root

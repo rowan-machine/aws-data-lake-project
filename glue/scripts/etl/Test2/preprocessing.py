@@ -1,28 +1,29 @@
-import logging
 from pyspark.sql import SparkSession
+from utils import get_spark_session
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-def preprocess_data(spark: SparkSession, staging_s3_path: str, preprocessed_s3_path: str, table_name: str, process_type: str):
-    logger.info(f"Preprocessing data for table: {table_name}, process type: {process_type}")
-    try:
-        # Read staged data
-        staged_data = spark.read.parquet(f"{staging_s3_path}{table_name}/")
-        logger.info("Staged data read successfully")
-
-        # Example transformation
-        preprocessed_data = staged_data.withColumnRenamed("old_column_name", "new_column_name")
-
-        # Write to preprocessed area
-        preprocessed_data.write.mode("overwrite").parquet(f"{preprocessed_s3_path}{table_name}/")
-        logger.info("Data written to preprocessed area successfully")
-    except Exception as e:
-        logger.error(f"Error preprocessing data for table {table_name}: {e}")
-        raise
+def preprocess_data(spark, staging_s3_path, preprocessed_s3_path, table_name, process_type):
+    """
+    Preprocess data from the staging layer and write to the preprocessed layer.
+    """
+    staging_data_path = os.path.join(staging_s3_path, table_name)
+    preprocessed_data_path = os.path.join(preprocessed_s3_path, table_name, process_type)
+    
+    df = spark.read.parquet(staging_data_path)
+    
+    # Example transformation (you should add your own logic here)
+    df = df.withColumn("total_amount", df["quantity"] * df["price"])
+    
+    df.write.parquet(preprocessed_data_path, mode="overwrite")
+    print(f"Data preprocessed from {staging_data_path} to {preprocessed_data_path}.")
 
 if __name__ == "__main__":
-    # Example usage (this would be in your main script or test script)
-    spark = SparkSession.builder.appName("Preprocessing").getOrCreate()
-    preprocess_data(spark, "s3a://staging-data/", "s3a://preprocessed-data/", "orders", "full_load")
+    # These paths should come from your configuration or environment variables
+    hadoop_aws_jar = "/opt/glue/jars/hadoop-aws-3.2.0.jar"
+    aws_sdk_jar = "/opt/glue/jars/aws-java-sdk-bundle-1.11.375.jar"
+    staging_s3_path = "s3a://ecommerce-data-lake-730335322582-us-east-1-dev/02_staging/"
+    preprocessed_s3_path = "s3a://ecommerce-data-lake-730335322582-us-east-1-dev/03_preprocessed/"
+    table_name = "orders"
+    process_type = "full_load"
+
+    spark = get_spark_session(hadoop_aws_jar, aws_sdk_jar)
+    preprocess_data(spark, staging_s3_path, preprocessed_s3_path, table_name, process_type)

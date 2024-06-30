@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - DEV
+      - integration/*
     paths:
       - 'cloudformation/storage.yaml'
       - '.github/workflows/deploy-storage.yaml'

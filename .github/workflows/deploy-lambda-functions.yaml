@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      #- DEV
+      - DEV
     paths:
       - 'cloudformation/lambda-functions.yaml'
       - '.github/workflows/deploy-lambda-functions.yaml'

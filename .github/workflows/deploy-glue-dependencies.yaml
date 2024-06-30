@@ -1,11 +1,10 @@
-name: Deploy Glue Job Script 
+name: Deploy Glue dependencies Script 
 
 on:
   push:
     branches:
       - main
       - DEV
-      - integration/*
 
 jobs:
   deploy:
@@ -31,6 +30,6 @@ jobs:
             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           fi
 
-      - name: Sync Glue script to S3
+      - name: Sync Glue dependencies to S3
         run: |
-          aws s3 cp glue/scripts/ s3://aws-glue-assets-730335322582-us-east-1-${{ env.ENVIRONMENT }}/scripts/ --recursive
+          aws s3 cp jars/ s3://aws-glue-assets-730335322582-us-east-1-${{ env.ENVIRONMENT }}/dependencies/ --recursive
