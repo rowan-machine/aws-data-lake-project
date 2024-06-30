@@ -7,21 +7,33 @@ RUN apt-get update \
     && apt-get install -y \
         python3-pip \
         python3-setuptools \
+        curl \
+        wget \
+        unzip \
         && rm -rf /var/lib/apt/lists/*
 
 # Install python packages
 RUN pip3 install --upgrade pip wheel
 RUN pip3 install jupyter awscli boto3 pyspark pandas notebook great_expectations
 
-# Create directory for Glue libraries and jars
-RUN mkdir -p /opt/glue/jars /var/log/glue
-
 # Copy necessary files
-COPY aws-glue-libs/ /opt/glue
+#COPY aws-glue-libs/ /opt/glue
 COPY glue/scripts /opt/glue/scripts
 
 # Copy AWS Glue libraries
-COPY aws-glue-libs/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
+#COPY aws-glue-libs/aws_glue_libs-4.0.0-py3.8.egg /opt/glue/aws_glue_libs-4.0.0-py3.8.egg
+
+# Download and install the AWS Glue libraries manually
+RUN mkdir -p /opt/glue \
+    && curl -o /opt/glue/aws-glue-libs.zip https://aws-glue-etl-artifacts.s3.amazonaws.com/glue-3.0/aws-glue-libs.zip \
+    && unzip /opt/glue/aws-glue-libs.zip -d /opt/glue \
+    && rm /opt/glue/aws-glue-libs.zip \
+    && cd /opt/glue/PyGlue.zip \
+    && unzip PyGlue.zip \
+    && rm PyGlue.zip
+
+# Create directory for Glue libraries and jars
+RUN mkdir -p /opt/glue/jars /var/log/glue
 
 # Copy JAR files
 COPY  jars/aws-java-sdk-bundle-1.11.375.jar /opt/glue/jars/
