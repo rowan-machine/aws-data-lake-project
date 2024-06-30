@@ -40,6 +40,8 @@ jobs:
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/DEV" ]]; then
             echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/integration/*" ]]; then
+            echo "ENVIRONMENT=dev" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           fi
