@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      #- DEV
+      - DEV
     paths:
       - 'cloudformation/glue-crawlers.yaml'
       - '.github/workflows/deploy-glue-crawlers.yaml'

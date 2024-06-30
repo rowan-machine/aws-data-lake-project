@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - DEV
+      - integration/*
     paths:
       - 'cloudformation/data-processing.yaml'
       - '.github/workflows/deploy-data-processing.yaml'

@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - DEV
-      - integration/*
 
 jobs:
   deploy:
@@ -31,6 +30,6 @@ jobs:
             echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           fi
 
-      - name: Sync Glue script to S3
+      - name: Sync Lambda script to S3
         run: |
-          aws s3 cp glue/scripts/ s3://aws-glue-assets-730335322582-us-east-1-${{ env.ENVIRONMENT }}/scripts/ --recursive
+          aws s3 cp lambda/scripts/ s3://aws-lambda-assets-730335322582-us-east-1-${{ env.ENVIRONMENT }}/scripts/ --recursive

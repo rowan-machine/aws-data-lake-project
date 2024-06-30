@@ -49,7 +49,7 @@ Resources:
         DataLakePrincipalIdentifier: !GetAtt LakeFormationAdminRole.Arn
       Resource:
         DataLocationResource:
-          S3Resource: !Sub "arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}"
+          S3Resource: !Sub "arn:aws:s3:::ecommerce-data-lake-${AWS::AccountId}-us-east-1-${Environment}"
       Permissions:
         - DATA_LOCATION_ACCESS
 
@@ -61,11 +61,6 @@ Resources:
         DataLakePrincipalIdentifier: !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/AWSGlueServiceRole-${Environment}"
       Resource:
         DataLocationResource:
-          S3Resource: !Sub "arn:aws:s3:::aws-glue-assets-${AWS::AccountId}-${AWS::Region}-${Environment}"
+          S3Resource: !Sub "arn:aws:s3:::ecommerce-data-lake-${AWS::AccountId}-us-east-1-${Environment}"
       Permissions:
         - DATA_LOCATION_ACCESS
-
-Outputs:
-  LakeFormationAdminRoleArn:
-    Description: ARN of the Lake Formation Admin Role
-    Value: !GetAtt LakeFormationAdminRole.Arn

@@ -34,8 +34,8 @@ Resources:
                   - 's3:PutObject'
                   - 's3:ListBucket'
                 Resource: 
-                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-${Environment}/*'
-                  - 'arn:aws:s3:::ecommerce-data-lake-us-east-1-${Environment}'
+                  - 'arn:aws:s3:::ecommerce-data-lake-${AWS::AccountId}-${AWS::Region}-${Environment}/*'
+                  - 'arn:aws:s3:::ecommerce-data-lake-${AWS::AccountId}-${AWS::Region}-${Environment}'
               - Effect: 'Allow'
                 Action:
                   - 'logs:CreateLogGroup'
@@ -52,10 +52,11 @@ Resources:
       DatabaseName: 'ecommerce_db_${Environment}'
       Targets:
         S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-${Environment}/01_raw/'
+          - Path: 's3://ecommerce-data-lake-${AWS::AccountId}-${AWS::Region}-${Environment}/raw/'
       SchemaChangePolicy:
         UpdateBehavior: 'UPDATE_IN_DATABASE'
         DeleteBehavior: 'LOG'
+      TablePrefix: raw
 
   StagingDataCrawler:
     Type: 'AWS::Glue::Crawler'
@@ -65,46 +66,27 @@ Resources:
       DatabaseName: 'ecommerce_db_${Environment}'
       Targets:
         S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-${Environment}/02_staging/'
+          - Path: 's3://ecommerce-data-lake-${AWS::AccountId}-${AWS::Region}-${Environment}/staging/'
       SchemaChangePolicy:
         UpdateBehavior: 'UPDATE_IN_DATABASE'
         DeleteBehavior: 'LOG'
+      TablePrefix: staging
 
-  PreprocessedDataCrawler:
+  ProcessedDataCrawler:
     Type: 'AWS::Glue::Crawler'
     Properties:
-      Name: 'preprocessed-data-crawler-${Environment}'
+      Name: 'processed-data-crawler-${Environment}'
       Role: !GetAtt GlueCrawlerRole.Arn
       DatabaseName: 'ecommerce_db_${Environment}'
       Targets:
         S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-${Environment}/03_preprocessed/'
+          - Path: 's3://ecommerce-data-lake-${AWS::AccountId}-${AWS::Region}-${Environment}/processed/'
       SchemaChangePolicy:
         UpdateBehavior: 'UPDATE_IN_DATABASE'
         DeleteBehavior: 'LOG'
 
-  MasterDataCrawler:
-    Type: 'AWS::Glue::Crawler'
+  GlueJobLogGroup:
+    Type: 'AWS::Logs::LogGroup'
     Properties:
-      Name: 'master-data-crawler-${Environment}'
-      Role: !GetAtt GlueCrawlerRole.Arn
-      DatabaseName: 'ecommerce_db_${Environment}'
-      Targets:
-        S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-${Environment}/04_master/'
-      SchemaChangePolicy:
-        UpdateBehavior: 'UPDATE_IN_DATABASE'
-        DeleteBehavior: 'LOG'
-
-  CuratedDataCrawler:
-    Type: 'AWS::Glue::Crawler'
-    Properties:
-      Name: 'curated-data-crawler-${Environment}'
-      Role: !GetAtt GlueCrawlerRole.Arn
-      DatabaseName: 'ecommerce_db_${Environment}'
-      Targets:
-        S3Targets:
-          - Path: 's3://ecommerce-data-lake-us-east-1-${Environment}/06_curated/'
-      SchemaChangePolicy:
-        UpdateBehavior: 'UPDATE_IN_DATABASE'
-        DeleteBehavior: 'LOG'
+      LogGroupName: !Sub '/aws-glue/crawlers/logs-${Environment}'
+      RetentionInDays: 30

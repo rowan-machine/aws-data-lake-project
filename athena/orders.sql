@@ -1,1 +1,1 @@
-SELECT * FROM "ecommerce_db_dev"."orders" LIMIT 10;
+SELECT * FROM "ecommerce_db_dev"."raworders" LIMIT 10;

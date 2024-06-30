@@ -47,7 +47,7 @@ Resources:
       Handler: index.handler
       Role: !GetAtt RunDbtLambdaExecutionRole.Arn
       Code:
-        S3Bucket: !Sub "aws-lambda-${AWS::AccountId}-${AWS::Region}-${Environment}"
+        S3Bucket: !Sub "aws-lambda-assets-${AWS::AccountId}-${AWS::Region}-${Environment}"
         S3Key: "run_dbt_lambda.zip"
       Runtime: python3.8
       Timeout: 300
