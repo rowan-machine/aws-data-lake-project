@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Setup for AWS Lake Formation
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Deployment environment (dev or prod)
+
+Resources:
+  # Lake Formation Admin Role
+  LakeFormationAdminRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement: 
+          - Effect: Allow
+            Principal:
+              Service: lakeformation.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LakeFormationAdminPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - glue:*
+                  - lakeformation:*
+                  - s3:*
+                Resource: "*"
+
+  # Data Lake Settings
+  DataLakeSettings:
+    Type: AWS::LakeFormation::DataLakeSettings
+    Properties:
+      Admins:
+        - DataLakePrincipalIdentifier: !GetAtt LakeFormationAdminRole.Arn
+
+  # Permissions for Lake Formation Admin Role
+  LakeFormationPermissions:
+    Type: AWS::LakeFormation::Permissions
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !GetAtt LakeFormationAdminRole.Arn
+      Resource:
+        DataLocationResource:
+          S3Resource: !Sub "arn:aws:s3:::ecommerce-data-lake-${AWS::AccountId}-us-east-1-${Environment}"
+      Permissions:
+        - DATA_LOCATION_ACCESS
+
+  # Grant Glue Service Role access to Lake Formation
+  GlueServiceRolePermission:
+    Type: AWS::LakeFormation::Permissions
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/AWSGlueServiceRole-${Environment}"
+      Resource:
+        DataLocationResource:
+          S3Resource: !Sub "arn:aws:s3:::ecommerce-data-lake-${AWS::AccountId}-us-east-1-${Environment}"
+      Permissions:
+        - DATA_LOCATION_ACCESS

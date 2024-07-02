@@ -3,7 +3,7 @@ name: Deploy Glue Job Script
 on:
   push:
     branches:
-      - main
+      #- main
       - DEV
 
 jobs:

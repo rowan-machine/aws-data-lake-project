@@ -3,10 +3,10 @@ name: Deploy Glue Crawlers
 on:
   push:
     branches:
-      - main
+      #- main
       - DEV
     paths:
-      - 'cloudformation/glue-crawlers.yaml'
+      - 'src/cloudformation/glue-crawlers.yaml'
       - '.github/workflows/deploy-glue-crawlers.yaml'
 
 jobs:

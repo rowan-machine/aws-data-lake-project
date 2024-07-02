@@ -7,7 +7,7 @@ on:
       - DEV
       - integration/*
     paths:
-      - 'cloudformation/**'
+      - 'src/cloudformation/**'
 
 jobs:
   upload:

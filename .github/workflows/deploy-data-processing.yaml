@@ -7,7 +7,7 @@ on:
       - DEV
       - integration/*
     paths:
-      - 'cloudformation/data-processing.yaml'
+      - 'src/cloudformation/data-processing.yaml'
       - '.github/workflows/deploy-data-processing.yaml'
 
 jobs:

@@ -3,10 +3,10 @@ name: Deploy Lambda Function
 on:
   push:
     branches:
-      - main
+      #- main
       - DEV
     paths:
-      - 'cloudformation/lambda-functions.yaml'
+      - 'src/cloudformation/lambda-functions.yaml'
       - '.github/workflows/deploy-lambda-functions.yaml'
 
 jobs:

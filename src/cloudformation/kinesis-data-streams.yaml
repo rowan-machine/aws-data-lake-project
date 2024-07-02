@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation Template to create a Kinesis Stream
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Deployment environment (e.g., dev, prod)
+    AllowedValues:
+      - dev
+      - prod
+    Default: dev
+
+Resources:
+  KinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      Name: customer-activity-stream-${Environment}
+      ShardCount: 1

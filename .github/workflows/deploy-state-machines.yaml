@@ -3,10 +3,10 @@ name: Deploy State Machine
 on:
   push:
     branches:
-      - main
+      #- main
       - DEV
     paths:
-      - 'cloudformation/state-machines.yaml'
+      - 'src/cloudformation/state-machines.yaml'
       - '.github/workflows/deploy-state-machines.yaml'
 
 jobs:
