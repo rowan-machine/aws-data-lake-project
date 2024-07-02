@@ -7,7 +7,7 @@ on:
       - DEV
       - integration/*
     paths:
-      - 'cloudformation/storage.yaml'
+      - 'src/cloudformation/storage.yaml'
       - '.github/workflows/deploy-storage.yaml'
 
 jobs:

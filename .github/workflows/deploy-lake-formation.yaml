@@ -3,10 +3,10 @@ name: Deploy Lake Formation
 on:
   push:
     branches:
-      - main
+      src/- main
       - DEV
     paths:
-      - 'cloudformation/lake-formation.yaml'
+      - 'src/cloudformation/lake-formation.yaml'
       - '.github/workflows/deploy-lake-formation.yaml'
 
 jobs:
